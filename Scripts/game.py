@@ -1,4 +1,5 @@
 import pygame as pg
+import random
 
 #Size of Screen..
 height = 400
@@ -43,6 +44,15 @@ countFPS = -1
 #CountFPSScore
 countFPSScore = 0
 
+#
+cactusIndex = True
+cactusIndexA = False
+cactusIndexB = False
+
+#
+cactusNumA = 0
+cactusNumB = 0
+
 #FPS
 fps = pg.time.Clock()
 
@@ -55,6 +65,28 @@ jumping =   pg.image.load('../Sprites/Dino/dino_jump.png')
 
 #Ground
 ground = pg.image.load('../Sprites/Scenario/ground.png')
+
+cactus =    [pg.image.load('../Sprites/Cactus/1.png'),
+            pg.image.load('../Sprites/Cactus/2.png'),
+            pg.image.load('../Sprites/Cactus/3.png'),
+            pg.image.load('../Sprites/Cactus/4.png'),
+            pg.image.load('../Sprites/Cactus/5.png'),
+            pg.image.load('../Sprites/Cactus/6.png'),
+            pg.image.load('../Sprites/Cactus/7.png'),
+            pg.image.load('../Sprites/Cactus/8.png'),
+            pg.image.load('../Sprites/Cactus/9.png'),
+            pg.image.load('../Sprites/Cactus/10.png'),
+            pg.image.load('../Sprites/Cactus/11.png'),
+            pg.image.load('../Sprites/Cactus/12.png'),
+            pg.image.load('../Sprites/Cactus/13.png'),
+            pg.image.load('../Sprites/Cactus/14.png'),
+            pg.image.load('../Sprites/Cactus/15.png'),
+            pg.image.load('../Sprites/Cactus/16.png'),
+            pg.image.load('../Sprites/Cactus/17.png'),
+            pg.image.load('../Sprites/Cactus/18.png'),
+            pg.image.load('../Sprites/Cactus/19.png'),
+            pg.image.load('../Sprites/Cactus/20.png'),
+            pg.image.load('../Sprites/Cactus/21.png'),]
 
 #Background
 bg = pg.image.load('../Sprites/Scenario/bg.png')
@@ -137,6 +169,42 @@ def speedDef():
     elif score == 2800:
         speed = 8
 
+###############################################################################
+
+aux = True
+
+def cactusGenerate():
+    global  countFPSScore, cactusIndexA, cactusIndexB, cactusIndex, cactusNumA, cactusNumB, aux
+
+    if countFPSScore % 50 == 0:
+        if random.randint(0, 9) > 4:
+            if cactusIndex:
+                cactusIndexA = True
+                aux = True
+                cactusNumA = random.randint(0, 20)
+            else:
+                cactusIndexB = True
+                aux = False
+                cactusNumB = random.randint(0, 20)
+  
+'''
+        if aux:
+            cactusIndexB = False
+
+        elif not aux:
+            cactusIndexA = False
+''' 
+
+    if cactusIndexA:
+        win.blit(cactus[cactusNumA], (posGroundXDin + 1100, posGroundY - 20))
+        print('A')
+
+    elif cactusIndexB:
+        win.blit(cactus[cactusNumB], (posGroundXDin + 1100, posGroundY - 20))
+        print('B')
+
+###################################################################################################
+
 def groundChange(): 
     global posGroundXDin, speedAdd, speed
 
@@ -151,6 +219,8 @@ def groundChange():
     win.blit(ground, (posGroundXDin, posGroundY))
     win.blit(ground, (posGroundXDin + 1100, posGroundY))
 
+    cactusGenerate()
+
 
 def updateScreen():
 
@@ -163,7 +233,6 @@ def updateScreen():
     pg.display.update()
 
 while runPlay:
-#    global speed
 
     fps.tick(32)
 
