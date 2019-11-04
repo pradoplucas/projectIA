@@ -294,6 +294,7 @@ def cactusGenerate():
                 heightCactusEnd = 62
 
 ##Verificar se o cacto passou do Dino..
+#Definir variáveis do Dino para a IA..
 
 def groundChange(): 
     global posGroundXDin, speedAdd, speed
