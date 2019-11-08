@@ -113,6 +113,30 @@ posBirdY = 0
 #ChangeTheBirdSprite
 updateBirdSprite = 0
 
+#
+dinoIsSuperJumping = False
+
+#
+auxMountainAppear = 0
+
+#
+mountainExist = False
+
+#
+mountainCount = 1100
+
+#
+allowSuperJump = True
+
+#
+auxSuperJump = 0
+
+#
+textScore = 0
+
+#
+textSuperJump = 0
+
 ##############################################################
 
 ##########################__IMAGES__##########################
@@ -121,6 +145,9 @@ background =        pygame.image.load('../Sprites/Scenario/bg.png')
 
 #Ground
 ground =            pygame.image.load('../Sprites/Scenario/ground.png')
+
+#Mountain
+mountain =            pygame.image.load('../Sprites/Scenario/mountain1.png')
 
 #DinoRunning
 dinoRunningImage =  [pygame.image.load('../Sprites/Dino/dino_11.png'), 
@@ -180,6 +207,10 @@ cactusImage =       [pygame.image.load('../Sprites/Cactus/1.png'),
 pygame.init()
 window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Runner T-Rex")
+
+fontBig = pygame.font.Font('freesansbold.ttf', 16)
+fontMedium = pygame.font.Font('freesansbold.ttf', 12)
+fontSmall = pygame.font.Font('freesansbold.ttf', 8) 
 ##############################################################
 
 def main():
@@ -239,6 +270,10 @@ def onUpdate():
     #
     onColliderCactus()
 
+    #
+    onColliderMountain()
+
+    #
     onColliderBird()
 
     if restart:
@@ -246,7 +281,7 @@ def onUpdate():
 
 def onRestart():
     global restart, speed, countFrames, countGround, score, dinoIsJumping, dinoIsLower, cactusAExist, cactusBExist, cactusCountA, cactusCountB
-    global birdExist, birdCount, birdPlace, auxCountBird, auxCactusCollider
+    global birdExist, birdCount, birdPlace, auxCountBird, auxCactusCollider, auxMountainAppear, mountainExist, mountainCount, allowSuperJump, auxSuperJump
 
     pygame.time.delay(500)
 
@@ -261,6 +296,8 @@ def onRestart():
     score = 0
 
     dinoIsJumping = False
+
+    dinoIsSuperJumping = False
 
     dinoIsLower = False
 
@@ -280,13 +317,30 @@ def onRestart():
 
     auxCountBird = 0
 
+    #
+    auxMountainAppear = 0
+
+    #
+    mountainExist = False
+
+    #
+    mountainCount = 1100
+
+    #
+    allowSuperJump = True
+
+    #
+    auxSuperJump = 0
+
 def setScore():
-    global countFrames, score
+    global countFrames, score, textScore, font
 
     score = countFrames // 4
 
-    #if countFrames % 4 == 0:
-    #    score += 1
+    textScore = fontBig.render(str(score), True, (83, 83, 83), (247, 247, 247)) 
+
+    window.blit(fontMedium.render('Score', True, (83, 83, 83), (247, 247, 247)) , (width - 50, 10))
+    window.blit(textScore, (width - 50, 25))
 
 def setSpeed():
     global speed, score
@@ -340,14 +394,14 @@ def updateGround():
     #velocidades possíveis [10, 12.5, 20, 25] = 4
 
 def updateDino():
-    global updateDinoSprite, dinoIsJumping, dinoIsLower, posDinoY, dinoCountJump, dinoX, dinoY, posDinoColX, posDinoColY
+    global updateDinoSprite, dinoIsJumping, dinoIsLower, posDinoY, dinoCountJump, dinoX, dinoY, posDinoColX, posDinoColY, dinoIsSuperJumping, allowSuperJump, auxSuperJump, textSuperJump
     
     keys = pygame.key.get_pressed()
 
     if updateDinoSprite == 8:
         updateDinoSprite = 0
 
-    if not dinoIsJumping:
+    if not dinoIsJumping and not dinoIsSuperJumping:
         dinoY = 180
         
         if not dinoIsLower:
@@ -375,10 +429,16 @@ def updateDino():
         elif keys[pygame.K_DOWN]:
             dinoIsLower = True
 
+        elif keys[pygame.K_SPACE] and allowSuperJump:
+            dinoIsSuperJumping = True
+            dinoCountJump = 9
+            allowSuperJump = False
+            auxSuperJump = 0
+
         else:
             dinoIsLower = False
 
-    else: #DinoIsJumping
+    elif dinoIsJumping: #DinoIsJumping
         if dinoCountJump >= -7.5:
             upDown = 1
             
@@ -400,10 +460,61 @@ def updateDino():
 
         window.blit(dinoJumpingImage, (dinoX, dinoY))
 
+    elif dinoIsSuperJumping: #DinoIsSUperJumping
+        if dinoCountJump >= -9:
+            upDown = 1
+            
+            if dinoCountJump < 0:
+                upDown = -1
+            
+            dinoY -= (dinoCountJump ** 2) * 0.5 * upDown
+
+            dinoCountJump -= 1
+
+        else:
+            dinoIsSuperJumping = False
+            dinoCountJump = 9
+
+        posDinoY = dinoY + 5
+
+        posDinoColX = dinoX + 40
+        posDinoColY = dinoY + 35
+
+        window.blit(dinoJumpingImage, (dinoX, dinoY))  
+
     #TestReferenceToAI
     #window.blit(pygame.image.load('../Sprites/redes.png'), (posDinoColX, posDinoColY))
 
     updateDinoSprite += 1
+
+    if countGround % 500 == 0:
+
+        if auxSuperJump != 7:
+            auxSuperJump += 1
+
+        if auxSuperJump == 7:
+            allowSuperJump = True
+
+    text = '['
+    auxText = ''
+
+    for i in range(auxSuperJump):
+        text += '#'
+
+    for i in range(7 - auxSuperJump):
+        auxText += '_'
+
+    text = text + auxText + ']'
+
+    #if(auxSuperJump == 7):
+    #    text = '[#ready#]'
+
+
+    textSuperJump = fontBig.render(str(text), True, (83, 83, 83), (247, 247, 247)) 
+
+    window.blit(fontMedium.render('SuperJump', True, (83, 83, 83), (247, 247, 247)) , (13, 10))
+
+    window.blit(textSuperJump, (10, 25)) 
 
 def cactusDef():
     #DefineWichCactusWillAppear
@@ -414,7 +525,7 @@ def cactusDef():
 
 def setCactus():
 
-    global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB
+    global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB, auxMountainAppear, mountainCount, mountainExist
 
     if countGround == 1000:
         if random.randint(0, 9) >= 3:
@@ -423,21 +534,28 @@ def setCactus():
             cactusNumA = random.randint(0, 33)
 
     elif countGround == 500:
-        if random.randint(0, 9) >= 3:
-            cactusBExist = True
-            cactusCountB = 1000
-            cactusNumB = random.randint(0, 33)
+        auxMountainAppear += 1
+        if auxMountainAppear == 4:
+            auxMountainAppear = 0
+            mountainExist = True
+            mountainCount = 1100
+
+        else:
+            if random.randint(0, 9) >= 3:
+                cactusBExist = True
+                cactusCountB = 1000
+                cactusNumB = random.randint(0, 33)
 
 def updateCactus():
-    global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB
+    global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB, mountainExist, mountainCount
 
     #ToA
     if cactusAExist:
         cactusCountA -= auxCountGround
 
-        if (cactusCountA != 10 and cactusCountA != 12.5 and 
-            cactusCountA != 20 and cactusCountA != 25):
-            
+        #if (cactusCountA != 10 and cactusCountA != 12.5 and 
+        #    cactusCountA != 20 and cactusCountA != 25):
+        if cactusCountA > 25:           
             if cactusImage[cactusNumA].get_size()[1] < 60:
                 posCactusY = 5
 
@@ -457,9 +575,10 @@ def updateCactus():
     if cactusBExist:
         cactusCountB -= auxCountGround
         
-        if (cactusCountB != 10 and cactusCountB != 12.5 and 
-            cactusCountB != 20 and cactusCountB != 25):
-            
+        #if (cactusCountB != 10 and cactusCountB != 12.5 and 
+        #    cactusCountB != 20 and cactusCountB != 25):
+
+        if cactusCountB > 25:
             if cactusImage[cactusNumB].get_size()[1] < 60:
                 posCactusY = 5
 
@@ -474,6 +593,23 @@ def updateCactus():
 
     else:
         cactusCountB = 1000
+
+
+    if mountainExist:
+        mountainCount -= auxCountGround
+
+        #if (mountainCount != 10 and mountainCount != 12.5 and 
+        #    mountainCount != 20 and mountainCount != 25):
+
+        if mountainCount > 25:
+            window.blit(mountain, (mountainCount - 190, 110))
+
+        else:
+            mountainExist = False
+            mountainCount = 1100
+
+    else:
+        mountainCount = 1100 
 
 def birdDef():
     #
@@ -500,9 +636,9 @@ def updateBird():
     if birdExist:
         birdCount -= auxCountGround
 
-        if (birdCount != 10 and birdCount != 12.5 and 
-            birdCount != 20 and birdCount != 25):
-
+        #if (birdCount != 10 and birdCount != 12.5 and 
+        #    birdCount != 20 and birdCount != 25):
+        if birdCount > 25:
             if updateBirdSprite == 8:
                 updateBirdSprite = 0
 
@@ -534,7 +670,7 @@ def setObstacleSize():
     widthCactusA = cactusImage[cactusNumA].get_size()[0]
     widthCactusB = cactusImage[cactusNumB].get_size()[0]
 
-    if (cactusCountA < cactusCountB) and (cactusCountA < birdCount) and (posDinoColX < cactusCountA + widthCactusA):
+    if (cactusCountA < cactusCountB) and (cactusCountA < birdCount) and (cactusCountA < mountainCount) and (posDinoColX < cactusCountA + widthCactusA):
         widthCactus = cactusImage[cactusNumA].get_size()[0]
 
         if (cactusNumA >= 0) and (cactusNumA <= 17):
@@ -561,7 +697,7 @@ def setObstacleSize():
 
         auxCactusCollider = cactusCountA - 50
 
-    elif (cactusCountA > cactusCountB) and (birdCount > cactusCountB) and (posDinoColX < cactusCountB + widthCactusB):
+    elif (cactusCountA > cactusCountB) and (birdCount > cactusCountB) and (mountainCount > cactusCountB) and (posDinoColX < cactusCountB + widthCactusB):
         widthCactus = cactusImage[cactusNumB].get_size()[0]        
 
         if (cactusNumB >= 0) and (cactusNumB <= 17):
@@ -591,7 +727,12 @@ def setObstacleSize():
     else:
         auxCactusCollider = 950
 
-    if (birdCount < cactusCountA) and (birdCount < cactusCountB) and (posDinoColX < birdCount + 60):
+    if (mountainCount < cactusCountA) and (mountainCount < cactusCountB) and (mountainCount < birdCount) and (posDinoColX < mountainCount + 140):
+        widthObstacle = 140
+        heightObstacle = 110
+        distanceObstacle = mountainCount - posDinoX
+
+    if (birdCount < cactusCountA) and (birdCount < cactusCountB) and (birdCount < mountainCount) and (posDinoColX < birdCount + 60):
         widthObstacle = 60
         heightObstacle = posBirdY
         distanceObstacle = birdCount - posDinoX
@@ -619,6 +760,19 @@ def onColliderBird():
     else:
         if (posDinoColX > (birdCount - 50)) and (posDinoColX < ((birdCount + 60) - 50)) and (posDinoColY > (posBirdY + 10)) and ((posDinoColY - 20) < (posBirdY + 42)):
             restart = True   
+
+def onColliderMountain():
+    global restart
+
+    if mountainExist:
+        if (posDinoColX > (mountainCount - 190)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 175) + 50)):
+            restart = True 
+
+        elif (posDinoColX > ((mountainCount - 190) + 50)) and (posDinoColY > 110) and (posDinoColX < ((mountainCount - 190) + 90)):
+            restart = True 
+
+        elif (posDinoColX > ((mountainCount - 190) + 90)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 190) + 140)):
+            restart = True 
 
 main()
 
