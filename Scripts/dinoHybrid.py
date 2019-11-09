@@ -135,6 +135,21 @@ textScore = 0
 #
 textSuperJump = 0
 
+#
+window = 0
+
+#
+fontBig = 0
+
+#
+fontMedium = 0
+
+#
+fontSmall = 0
+
+#
+framesPerSecond = 0
+
 ##############################################################
 
 ##########################__IMAGES__##########################
@@ -200,39 +215,16 @@ cactusImage =       [pygame.image.load('../Sprites/Cactus/1.png'),
 
 ##############################################################
 
-#######################__PYGAME_INIT__########################
-#Init // Screen // Caption
-pygame.init()
-window = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Runner T-Rex")
-
-fontBig = pygame.font.Font('freesansbold.ttf', 16)
-fontMedium = pygame.font.Font('freesansbold.ttf', 12)
-fontSmall = pygame.font.Font('freesansbold.ttf', 8) 
-##############################################################
-
 def main():
-    global countFrames
-
-    #DefineIfTheGameIsRunningOrNot
-    isPlaying = True
-
-    #FPS
-    framesPerSecond = pygame.time.Clock()
+    gameInit()
 
     #InfinitLoop
     while isPlaying:
-
-        #DefineTheFPSOfGmae
-        framesPerSecond.tick(FPS)
     
         #CloseTheGame
         for event in pygame.event.get():
             if (event.type == pygame.QUIT) or pygame.key.get_pressed()[pygame.K_ESCAPE]:   
                 isPlaying = False
-
-        #NumberOfFrames
-        countFrames += 1
 
         #ThingsToDo
         onUpdate()
@@ -240,9 +232,36 @@ def main():
         #Update
         pygame.display.update()
 
+def gameInit():
+    global window,fontBig, fontMedium, fontSmall, frames, framesPerSecond
+
+    #######################__PYGAME_INIT__########################
+    #Init // Screen // Caption
+    pygame.init()
+    window = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("Runner T-Rex")
+
+    fontBig = pygame.font.Font('freesansbold.ttf', 16)
+    fontMedium = pygame.font.Font('freesansbold.ttf', 12)
+    fontSmall = pygame.font.Font('freesansbold.ttf', 8) 
+    ##############################################################
+
+    #DefineIfTheGameIsRunningOrNot
+    isPlaying = True
+
+    #FPS
+    framesPerSecond = pygame.time.Clock()
+
 def onUpdate():
+    global countFrames, framesPerSecond
+
+    framesPerSecond.tick(FPS)
+
     #SetBackgroundInEachFrame
     window.blit(background, (-50, -50))
+
+    #
+    countFrames += 1
 
     #DefineTheScore
     setScore()
@@ -276,6 +295,8 @@ def onUpdate():
 
     if restartAll:
         onRestartAll()
+
+    pygame.display.update()
 
 def onRestartAll():
     global restartAll, speed, countFrames, countGround, score, dinoIsJumping, dinoIsLower, cactusAExist, cactusBExist, cactusCountA, cactusCountB
@@ -811,6 +832,6 @@ def onColliderMountain():
         elif (posDinoColX > ((mountainCount - 190) + 90)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 190) + 140)):
             restartAll = True 
 
-main()
+#main()
 
 pygame.quit()
