@@ -1,8 +1,12 @@
 import pygame
 import random
+import redeNeural2 as rn # nn -> NeuralNetwork
 
+# Inicializando a rede neural do jogo
+# 5 camadas de entrada, 5 camadas ocultas e 3 saídas
+
+dinoCerebro = rn.Neural(5, 10, 3)
 #####################__VARIABLES_TO_AI__######################
-
 #Speed
 speed = 1
 
@@ -17,6 +21,10 @@ heightObstacle = 0
 
 #
 distanceObstacle = 0
+
+# Adicionando variável para receber todas as entradas
+entradas = [0, 1, 2, 3, 4]
+
 
 ##############################################################
 
@@ -139,7 +147,7 @@ textSuperJump = 0
 
 ##########################__IMAGES__##########################
 #Background247
-background =        pygame.image.load('../Sprites/Scenario/bg.png')
+background = pygame.image.load('../Sprites/Scenario/bg.png')
 
 #Ground
 ground =            pygame.image.load('../Sprites/Scenario/ground.png')
@@ -405,8 +413,21 @@ def updateGround():
 
 def updateDino():
     global updateDinoSprite, dinoIsJumping, dinoIsLower, posDinoY, dinoCountJump, dinoX, dinoY, posDinoColX, posDinoColY, dinoIsSuperJumping, allowSuperJump, auxSuperJump, textSuperJump, heightDino
-    
-    keys = pygame.key.get_pressed()
+
+    # Alimentando entrada da rede Neural
+    entradas[0] = speed
+    entradas[1] = heightDino
+    entradas[2] = widthObstacle
+    entradas[3] = heightObstacle
+    entradas[4] = distanceObstacle
+
+    #Calculando Previsão
+    saidas, ocultas = dinoCerebro.predict(entradas)
+    pular = saidas[0] > 0.7
+    abaixar = saidas[1] > 0.7
+    superJumping = saidas[2] > 0.7
+
+    #keys = pygame.key.get_pressed()
 
     if updateDinoSprite == 8:
         updateDinoSprite = 0
@@ -432,20 +453,24 @@ def updateDino():
 
             window.blit(dinoLowerImage[updateDinoSprite//4], (dinoX, dinoY))            
 
-        if keys[pygame.K_UP]:
+        #if keys[pygame.K_UP]:
+        if pular:
             jumpDef()
 
-        elif keys[pygame.K_DOWN]:
+        #elif keys[pygame.K_DOWN]:
+        elif abaixar:
             lowerDef()
 
-        elif keys[pygame.K_SPACE] and allowSuperJump:
+        #elif keys[pygame.K_SPACE] and allowSuperJump:
+        elif superJumping and allowSuperJump:
             superJumpDef()
 
         else:
             dinoIsLower = False
 
     elif dinoIsJumping and not dinoIsSuperJumping: #DinoIsJumping
-        if keys[pygame.K_DOWN]:
+        #if keys[pygame.K_DOWN]:
+        if abaixar:
             lowerDef()
         
         if dinoCountJump >= -7.5:
@@ -470,7 +495,8 @@ def updateDino():
         window.blit(dinoJumpingImage, (dinoX, dinoY))
 
     elif dinoIsSuperJumping: #DinoIsSUperJumping
-        if keys[pygame.K_DOWN]:
+        #if keys[pygame.K_DOWN]:
+        if abaixar:
             lowerDef()
 
         if dinoCountJump >= -9:
@@ -494,6 +520,7 @@ def updateDino():
 
         window.blit(dinoJumpingImage, (dinoX, dinoY))  
 
+    
     #TestReferenceToAI
     #window.blit(pygame.image.load('../Sprites/redes.png'), (posDinoColX, posDinoColY))
 
@@ -779,9 +806,12 @@ def onColliderCactus():
 
     if (posDinoColX > auxCactusCollider) and (posDinoColY > (245 - heightCactusBegin)) and (posDinoColX < (auxCactusCollider + (widthCactus / 2))):
         restartAll = True
+        print(entradas)
+        dinoCerebro.train(entradas, [1, 0, 0])
 
     elif (posDinoColX > (auxCactusCollider + (widthCactus / 2))) and (posDinoColY > (245 - heightCactusEnd)) and ((posDinoColX - 25) < (auxCactusCollider + widthCactus)):
         restartAll = True
+        
 
 def onColliderBird():
     global restartAll
@@ -803,13 +833,13 @@ def onColliderMountain():
 
     if mountainExist:
         if (posDinoColX > (mountainCount - 190)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 175) + 50)):
-            restartAll = True 
+            restartAll = True
 
         elif (posDinoColX > ((mountainCount - 190) + 50)) and (posDinoColY > 110) and (posDinoColX < ((mountainCount - 190) + 90)):
             restartAll = True 
 
         elif (posDinoColX > ((mountainCount - 190) + 90)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 190) + 140)):
-            restartAll = True 
+            restartAll = True
 
 main()
 

@@ -93,3 +93,19 @@ def sigmoid(x):
 def dsigmoid(x):
     return x * (1-x)
 
+def relu(x):
+    for elemento in (x):
+        if(elemento < 0):
+            elemento = 0
+        
+    return x
+
+def drelu(x):
+    for elemento in len(x):
+        if(elemento < 0):
+            elemento = 0
+        else:
+            elemento = 1
+    return x
+
+
