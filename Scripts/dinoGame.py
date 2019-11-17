@@ -1,12 +1,19 @@
 import pygame
 import random
-import redeNeural2 as rn # nn -> NeuralNetwork
+import numpy as np
+import redeNeural2 as rn
 
+#####################__VARIABLES_TO_AI__######################
 # Inicializando a rede neural do jogo
 # 5 camadas de entrada, 5 camadas ocultas e 3 saídas
+dino = []
+TamanhoPopulacao = 10
+RangeRandom = 815 # O ideal é ser a quantidade de pesos da rede Neural
+scoreDino = np.zeros(TamanhoPopulacao)
+entradas = np.zeros(5)
+individuo = 0
+geracao = 0
 
-dinoCerebro = rn.Neural(5, 10, 3)
-#####################__VARIABLES_TO_AI__######################
 #Speed
 speed = 1
 
@@ -21,9 +28,6 @@ heightObstacle = 0
 
 #
 distanceObstacle = 0
-
-# Adicionando variável para receber todas as entradas
-entradas = [0, 1, 2, 3, 4]
 
 
 ##############################################################
@@ -228,6 +232,11 @@ def main():
     #FPS
     framesPerSecond = pygame.time.Clock()
 
+    #Iniciar dinossauros
+    for i in range(TamanhoPopulacao):
+        dino.append(rn.Neural(5, 5, 3))
+    
+
     #InfinitLoop
     while isPlaying:
 
@@ -249,6 +258,8 @@ def main():
         pygame.display.update()
 
 def onUpdate():
+    global individuo, geracao
+
     #SetBackgroundInEachFrame
     window.blit(background, (-50, -50))
 
@@ -283,11 +294,23 @@ def onUpdate():
     onColliderBird()
 
     if restartAll:
+        scoreDino[individuo] = score
+        individuo = (individuo + 1)%TamanhoPopulacao
+        if (individuo == 0):
+            RandomMutations()
+            geracao += 1
+
         onRestartAll()
 
 def onRestartAll():
     global restartAll, speed, countFrames, countGround, score, dinoIsJumping, dinoIsLower, cactusAExist, cactusBExist, cactusCountA, cactusCountB
     global birdExist, birdCount, birdPlace, auxCountBird, auxCactusCollider, auxMountainAppear, mountainExist, mountainCount, allowSuperJump, auxSuperJump
+    global geracao, individuo
+
+    #Apenas para ter noção do que tá acontecendo
+    print('Geracao: %d'  %geracao)
+    print("Individuo: %d" %individuo)
+    
 
     pygame.time.delay(500)
 
@@ -422,7 +445,7 @@ def updateDino():
     entradas[4] = distanceObstacle
 
     #Calculando Previsão
-    saidas, ocultas = dinoCerebro.predict(entradas)
+    saidas, ocultas = dino[individuo].predict(entradas)
     pular = saidas[0] > 0.7
     abaixar = saidas[1] > 0.7
     superJumping = saidas[2] > 0.7
@@ -806,8 +829,8 @@ def onColliderCactus():
 
     if (posDinoColX > auxCactusCollider) and (posDinoColY > (245 - heightCactusBegin)) and (posDinoColX < (auxCactusCollider + (widthCactus / 2))):
         restartAll = True
-        print(entradas)
-        dinoCerebro.train(entradas, [1, 0, 0])
+        #print(entradas)
+        #dinoCerebro.train(entradas, [1, 0, 0])
 
     elif (posDinoColX > (auxCactusCollider + (widthCactus / 2))) and (posDinoColY > (245 - heightCactusEnd)) and ((posDinoColX - 25) < (auxCactusCollider + widthCactus)):
         restartAll = True
@@ -840,6 +863,41 @@ def onColliderMountain():
 
         elif (posDinoColX > ((mountainCount - 190) + 90)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 190) + 140)):
             restartAll = True
+
+def RandomMutations():
+    global scoreDino, RangeRandom
+    # Ordenar dino por score
+    aux_trocar=[]
+    for i in range(TamanhoPopulacao):
+        for j in range(TamanhoPopulacao-1):
+            if(scoreDino[j] < scoreDino[j+1]):
+                # Trocando "Cerebro"
+                aux_trocar = dino[j]
+                dino[j] = dino[j+1]
+                dino[j+1] = aux_trocar
+                #Trocando Score
+                aux_trocar = scoreDino[j]
+                scoreDino[j] = scoreDino[j+1]
+                scoreDino[j+1] = aux_trocar
+    
+    # Etapa de clonar individuo
+    step = 2
+    for i in range(step):
+        for j in range(step + i, TamanhoPopulacao):
+            dino[j] = dino[i]
+
+    #Aplicando random mutations
+    for i in range(step, TamanhoPopulacao):
+        tipo = 0
+        mutations = np.random.randint(0, int(RangeRandom)) + 1
+
+        for j in range(mutations):
+            dino[i].mutacao()
+
+    print("Mutacao com sucesso")
+    RangeRandom *= 0.99
+    if RangeRandom < 20:
+        RangeRandom = 20
 
 main()
 
