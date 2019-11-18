@@ -177,6 +177,8 @@ fontSmall = pygame.font.Font('freesansbold.ttf', 8)
 def main():
     global countFrames
 
+    print('Geração 1')
+
     #DefineIfTheGameIsRunningOrNot
     isPlaying = True
 
@@ -212,6 +214,9 @@ def onUpdate():
 
     #SetBackgroundInEachFrame
     window.blit(background, (-50, -50))
+
+    textGeracao= fontBig.render(str(f'Geração {geracao + 1}'), True, (83, 83, 83), (247, 247, 247)) 
+    window.blit(textGeracao, (13, 10))
 
     #DefineTheScore
     setScore()
@@ -260,7 +265,7 @@ def onRestartAll():
     global geracao, individuo, dino
 
     #Apenas para ter noção do que tá acontecendo
-    print('Geracao: %d'  %geracao)
+    print(f'Geração: {geracao + 1}')
     
     pygame.time.delay(500)
 
@@ -547,11 +552,14 @@ def lowerDef(i):
         dino[i].CountJump -= 3
 
 def superJumpDef(i):
+
+    '''
     global dino
     dino[i].IsSuperJumping = True
     dino[i].CountJump = 9
     dino[i].allowSuperJump = False
     dino[i].auxSuperJump = 0
+    '''
 
 def cactusDef():
     #DefineWichCactusWillAppear
@@ -570,6 +578,7 @@ def setCactus():
             cactusNumA = random.randint(0, 33)
 
     elif countGround == 500:
+        '''
         auxMountainAppear += 1
         if auxMountainAppear == 4:
             auxMountainAppear = 0
@@ -577,10 +586,12 @@ def setCactus():
             mountainCount = 1100
 
         else:
-            if random.randint(0, 9) >= 3:
-                cactusBExist = True
-                cactusCountB = 1000
-                cactusNumB = random.randint(0, 33)
+        '''
+    
+        if random.randint(0, 9) >= 3:
+            cactusBExist = True
+            cactusCountB = 1000
+            cactusNumB = random.randint(0, 33)
 
 def updateCactus():
     global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB, mountainExist, mountainCount
@@ -630,7 +641,7 @@ def updateCactus():
     else:
         cactusCountB = 1000
 
-
+    
     if mountainExist:
         mountainCount -= auxCountGround
 
