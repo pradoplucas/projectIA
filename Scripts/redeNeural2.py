@@ -106,11 +106,11 @@ class Neural(object):
 ################################## Funcões de Ativacao #########################################
 # Função genérica de ativação
 def funcaoAtivacao(x):
-    return sigmoid(x)
+    return relu(x)
 
 # Derivada da Função genérica de ativação
 def funcaoAtivacaoDerivada(x):
-    return dsigmoid(x)
+    return drelu(x)
 
 # Função de Ativação Sigmóide
 def sigmoid(x):
@@ -121,19 +121,28 @@ def dsigmoid(x):
     return x * (1-x)
 
 def relu(x):
-    for elemento in (x):
-        if(elemento < 0):
-            elemento = 0
-        
+    for i in range(len(x)):
+        if(x[i] < 0):
+            x[i] = 0
     return x
 
 def drelu(x):
-    for elemento in len(x):
-        if(elemento < 0):
-            elemento = 0
+    for i in range(len(x)):
+        if(x[i] < 0):
+            x[i] = 0
         else:
-            elemento = 1
+            x[i] = 1
     return x
+
+#Função para auxiliar a copiar valores
+def copy(var1, var2):
+    var1.nos_e = var2.nos_e
+    var1.nos_o = var2.nos_o
+    var1.nos_s = var2.nos_s
+    var1.bias_eo = var2.bias_eo.copy()
+    var1.bias_os = var2.bias_os.copy()
+    var1.pesos_eo = var2.pesos_eo.copy()
+    var1.pesos_os = var2.pesos_os.copy()
 
 ## Função para auxiliar na mutação
 def mutacaoMatriz(tipo_mutacao, valor):

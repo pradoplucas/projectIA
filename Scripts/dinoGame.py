@@ -2,12 +2,13 @@ import pygame
 import random
 import numpy as np
 import dinossauro as dn
+import redeNeural2 as rn
 
 #####################__VARIABLES_TO_AI__######################
 # Inicializando a rede neural do jogo
 # 5 camadas de entrada, 5 camadas ocultas e 3 saídas
 dino = []
-TamanhoPopulacao = 100
+TamanhoPopulacao = 150
 RangeRandom = 815 # O ideal é ser a quantidade de pesos da rede Neural
 entradas = np.zeros(5)
 individuo = 0
@@ -396,15 +397,16 @@ def updateDino(i):
 
         #Calculando Previsão
         saidas, ocultas = dino[i].cerebro.predict(entradas)
-        pular = saidas[0] > 0.9
-        abaixar = False
-        superJumping = False
-        
+        pular = saidas[0] == 0.0
+        abaixar = saidas[1] == 0.0
+        superJumping = saidas[2] == 0.0
+
+        '''
         if not pular:
             abaixar = saidas[1] > 0.9
         elif not abaixar:
             superJumping = saidas[2] > 0.9
-
+        '''
         #keys = pygame.key.get_pressed()
 
         if dino[i].updateSprite == 8:
@@ -820,20 +822,31 @@ def onColliderMountain(i):
 def RandomMutations():
     global dino, RangeRandom
     #Ordenação de dino por score
-    aux_trocar=[]
+    aux_trocar=dino[0].cerebro
     for i in range(TamanhoPopulacao):
         for j in range(TamanhoPopulacao-1):
             if(dino[j].score < dino[j+1].score):
                 # Trocando "Cerebro"
-                aux_trocar = dino[j].cerebro
-                dino[j].cerebro = dino[j+1].cerebro
-                dino[j+1].cerebro = aux_trocar
+                rn.copy(aux_trocar, dino[j].cerebro)
+                rn.copy(dino[j].cerebro, dino[j+1].cerebro)
+                rn.copy(dino[j+1].cerebro, aux_trocar)
+                '''
+                aux_trocar = dino[j].cerebro.copy()
+                dino[j].cerebro = dino[j+1].cerebro.copy()
+                dino[j+1].cerebro = aux_trocar.copy()
     
+    melhordino = dino[0]
+    for i in range(1, TamanhoPopulacao):
+        if(dino[i].score < melhordino.score):
+            melhordino = dino[i].score
+    dino[0] = melhordino
+    '''
+
     # Etapa de clonar individuo
-    step = 10
+    step = 3
     for i in range(step):
         for j in range(step + i, TamanhoPopulacao, step):
-            dino[j].cerebro = dino[i].cerebro
+            rn.copy(dino[j].cerebro, dino[i].cerebro)
 
     #Aplicando random mutations
     for i in range(step, TamanhoPopulacao):
