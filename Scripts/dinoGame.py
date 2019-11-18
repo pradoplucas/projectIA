@@ -667,15 +667,15 @@ def birdDef():
 
 def setBird():
     global birdExist, birdCount, birdPlace, auxCountBird
-    if score > 500:
-        if countGround % 1000 == 0:
-            auxCountBird += 1
+    #if score > 500:
+    if countGround % 1000 == 0:
+        auxCountBird += 1
 
-            if random.randint(0, 9) >= 0 and auxCountBird == 2:
-                auxCountBird = 0
-                birdExist = True
-                birdCount = 1250
-                birdPlace = random.randint(0, 2)
+        if random.randint(0, 9) >= 0 and auxCountBird == 2:
+            auxCountBird = 0
+            birdExist = True
+            birdCount = 1250
+            birdPlace = random.randint(0, 2)
 
 def updateBird():
     global birdCount, posBirdY, updateBirdSprite, birdExist
@@ -795,7 +795,6 @@ def onColliderCactus(i):
         #restartAll = True
         dino[i].dead = True
         
-
 def onColliderBird(i):
     global restartAll
 
@@ -807,7 +806,7 @@ def onColliderBird(i):
     elif dino[i].IsJumping:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and ((dino[i].posColY - 20) > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
             #restartAll = True
-            dino[i].dead = True   
+            dino[i].dead = True  
 
     else:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
