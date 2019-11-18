@@ -1,24 +1,20 @@
 import pygame
 import random
 import numpy as np
-import redeNeural2 as rn
+import dinossauro as dn
 
 #####################__VARIABLES_TO_AI__######################
 # Inicializando a rede neural do jogo
 # 5 camadas de entrada, 5 camadas ocultas e 3 saídas
 dino = []
-TamanhoPopulacao = 10
+TamanhoPopulacao = 100
 RangeRandom = 815 # O ideal é ser a quantidade de pesos da rede Neural
-scoreDino = np.zeros(TamanhoPopulacao)
 entradas = np.zeros(5)
 individuo = 0
 geracao = 0
 
 #Speed
 speed = 1
-
-#
-heightDino = 0
 
 #
 widthObstacle = 0
@@ -28,8 +24,6 @@ heightObstacle = 0
 
 #
 distanceObstacle = 0
-
-
 ##############################################################
 
 
@@ -47,10 +41,6 @@ heightCactusEnd = 0
 #
 restartAll = False
 
-#CenterOfTheDinoPosition
-posDinoX = 129 #DontReallyNeedBecauseItsFixed
-posDinoY = 0
-
 #DimensionsOfScreen
 width = 900
 height = 400
@@ -66,22 +56,6 @@ countGround = 1000
 
 #Score
 score = 0
-
-#ChangeTheDinoSprite
-updateDinoSprite = 0
-
-#VerifyIfDinoIsJumpinp
-dinoIsJumping = False
-
-#DinoIsLower
-dinoIsLower = False
-
-#HightOfJump
-dinoCountJump = 0
-
-#PlaceToSetDinoImage
-dinoX = 100
-dinoY = 180
 
 #VerifyIfCactusExists
 cactusAExist = False
@@ -100,10 +74,6 @@ auxCactusCollider = -1
 
 #LastGroundUpdate
 auxCountGround = -1
-
-#PositionToDinoCollide
-posDinoColX = 0
-posDinoColY = 0
 
 #VerifyIfBirdExist
 birdExist = False
@@ -124,9 +94,6 @@ posBirdY = 0
 updateBirdSprite = 0
 
 #
-dinoIsSuperJumping = False
-
-#
 auxMountainAppear = 0
 
 #
@@ -134,12 +101,6 @@ mountainExist = False
 
 #
 mountainCount = 1100
-
-#
-allowSuperJump = True
-
-#
-auxSuperJump = 0
 
 #
 textScore = 0
@@ -158,17 +119,6 @@ ground =            pygame.image.load('../Sprites/Scenario/ground.png')
 
 #Mountain
 mountain =            pygame.image.load('../Sprites/Scenario/mountain1.png')
-
-#DinoRunning
-dinoRunningImage =  [pygame.image.load('../Sprites/Dino/dino_11.png'), 
-                    pygame.image.load('../Sprites/Dino/dino_22.png')]
-
-#DinoLower
-dinoLowerImage =  [pygame.image.load('../Sprites/Dino/down_1.png'), 
-                    pygame.image.load('../Sprites/Dino/down_2.png')]
-
-#DinoJumping
-dinoJumpingImage =  pygame.image.load('../Sprites/Dino/dino_jump.png')
 
 #BirdImage
 birdImage =     [pygame.image.load('../Sprites/Bird/bird_1.png'), 
@@ -234,12 +184,10 @@ def main():
 
     #Iniciar dinossauros
     for i in range(TamanhoPopulacao):
-        dino.append(rn.Neural(5, 5, 3))
-    
+        dino.append(dn.Dinossauro())
 
     #InfinitLoop
     while isPlaying:
-
         #DefineTheFPSOfGmae
         framesPerSecond.tick(FPS)
     
@@ -258,7 +206,8 @@ def main():
         pygame.display.update()
 
 def onUpdate():
-    global individuo, geracao
+    #global individuo, geracao
+    global restartAll, geracao
 
     #SetBackgroundInEachFrame
     window.blit(background, (-50, -50))
@@ -273,7 +222,8 @@ def onUpdate():
     updateGround()
 
     #ChangesInDinoPosition
-    updateDino()
+    for i in range(TamanhoPopulacao):
+        updateDino(i)
 
     #FunctionsRelatedWithCactus
     cactusDef()
@@ -284,34 +234,33 @@ def onUpdate():
     #
     setObstacleSize()
 
-    #
-    onColliderCactus()
+    #Ações de colisão
+    for i in range(TamanhoPopulacao):
+        onColliderCactus(i)
+        onColliderMountain(i)
+        onColliderBird(i)
 
-    #
-    onColliderMountain()
-
-    #
-    onColliderBird()
-
+    #Verificação se todos os dino morreram
+    cont = 0
+    for i in range(TamanhoPopulacao):
+        if dino[i].dead:
+            cont += 1 
+        if cont == TamanhoPopulacao:
+            restartAll = True
+    
     if restartAll:
-        scoreDino[individuo] = score
-        individuo = (individuo + 1)%TamanhoPopulacao
-        if (individuo == 0):
-            RandomMutations()
-            geracao += 1
-
+        RandomMutations()
+        geracao += 1
         onRestartAll()
 
 def onRestartAll():
-    global restartAll, speed, countFrames, countGround, score, dinoIsJumping, dinoIsLower, cactusAExist, cactusBExist, cactusCountA, cactusCountB
-    global birdExist, birdCount, birdPlace, auxCountBird, auxCactusCollider, auxMountainAppear, mountainExist, mountainCount, allowSuperJump, auxSuperJump
-    global geracao, individuo
+    global restartAll, speed, countFrames, countGround, score, dino, cactusAExist, cactusBExist, cactusCountA, cactusCountB
+    global birdExist, birdCount, birdPlace, auxCountBird, auxCactusCollider, auxMountainAppear, mountainExist, mountainCount
+    global geracao, individuo, dino
 
     #Apenas para ter noção do que tá acontecendo
     print('Geracao: %d'  %geracao)
-    print("Individuo: %d" %individuo)
     
-
     pygame.time.delay(500)
 
     restartAll = False
@@ -324,11 +273,15 @@ def onRestartAll():
 
     score = 0
 
-    dinoIsJumping = False
-
-    dinoIsSuperJumping = False
-
-    dinoIsLower = False
+    for i in range(TamanhoPopulacao):
+        dino[i].score = 0
+        dino[i].IsJumping = False
+        dino[i].IsSuperJumping = False
+        dino[i].IsLower = False
+        dino[i].dead = False
+        dino[i].height = 0
+        dino[i].auxSuperJump = 0
+        dino[i].allowSuperJump = True
 
     cactusAExist = False
     cactusBExist = False
@@ -356,15 +309,6 @@ def onRestartAll():
     mountainCount = 1100
 
     #
-    allowSuperJump = True
-
-    #
-    auxSuperJump = 0
-
-    #
-    heightDino = 0
-
-    #
     widthObstacle = 0
 
     #
@@ -374,10 +318,15 @@ def onRestartAll():
     distanceObstacle = 0
 
 def setScore():
-    global countFrames, score, textScore, font
+    global countFrames, score, textScore
 
     score = countFrames // 4
-
+    
+    #Setando score para cada dino
+    for i in range(TamanhoPopulacao):
+        if not dino[i].dead:
+            dino[i].score = score
+    
     textScore = fontBig.render(str(score), True, (83, 83, 83), (247, 247, 247)) 
 
     window.blit(fontMedium.render('Score', True, (83, 83, 83), (247, 247, 247)) , (width - 50, 10))
@@ -434,174 +383,173 @@ def updateGround():
 
     #velocidades possíveis [10, 12.5, 20, 25] = 4
 
-def updateDino():
-    global updateDinoSprite, dinoIsJumping, dinoIsLower, posDinoY, dinoCountJump, dinoX, dinoY, posDinoColX, posDinoColY, dinoIsSuperJumping, allowSuperJump, auxSuperJump, textSuperJump, heightDino
+def updateDino(i):
+    global dino
 
-    # Alimentando entrada da rede Neural
-    entradas[0] = speed
-    entradas[1] = heightDino
-    entradas[2] = widthObstacle
-    entradas[3] = heightObstacle
-    entradas[4] = distanceObstacle
+    if not dino[i].dead:
+        # Alimentando entrada da rede Neural
+        entradas[0] = speed
+        entradas[1] = dino[i].height
+        entradas[2] = widthObstacle
+        entradas[3] = heightObstacle
+        entradas[4] = distanceObstacle
 
-    #Calculando Previsão
-    saidas, ocultas = dino[individuo].predict(entradas)
-    pular = saidas[0] > 0.7
-    abaixar = saidas[1] > 0.7
-    superJumping = saidas[2] > 0.7
-
-    #keys = pygame.key.get_pressed()
-
-    if updateDinoSprite == 8:
-        updateDinoSprite = 0
-
-    if not dinoIsJumping and not dinoIsSuperJumping:
-        dinoY = 180
+        #Calculando Previsão
+        saidas, ocultas = dino[i].cerebro.predict(entradas)
+        pular = saidas[0] > 0.9
+        abaixar = False
+        superJumping = False
         
-        if not dinoIsLower:
-            posDinoY = 185
-            dinoX = 100
+        if not pular:
+            abaixar = saidas[1] > 0.9
+        elif not abaixar:
+            superJumping = saidas[2] > 0.9
 
-            posDinoColX = dinoX + 40
-            posDinoColY = dinoY + 35
+        #keys = pygame.key.get_pressed()
 
-            window.blit(dinoRunningImage[updateDinoSprite//4], (dinoX, dinoY))
+        if dino[i].updateSprite == 8:
+            dino[i].updateSprite = 0
 
-        else:
-            posDinoY = + 20
-            dinoX = 90
+        if not dino[i].IsJumping and not dino[i].IsSuperJumping:
+            dino[i].Y = 180
+            
+            if not dino[i].IsLower:
+                dino[i].posY = 185
+                dino[i].X = 100
 
-            posDinoColX = dinoX + 70
-            posDinoColY = dinoY + 30
+                dino[i].posColX = dino[i].X + 40
+                dino[i].posColY = dino[i].Y + 35
 
-            window.blit(dinoLowerImage[updateDinoSprite//4], (dinoX, dinoY))            
+                window.blit(dino[i].RunningImage[dino[i].updateSprite//4], (dino[i].X, dino[i].Y))
 
-        #if keys[pygame.K_UP]:
-        if pular:
-            jumpDef()
+            else:
+                dino[i].posY = + 20
+                dino[i].X = 90
 
-        #elif keys[pygame.K_DOWN]:
-        elif abaixar:
-            lowerDef()
+                dino[i].posColX = dino[i].X + 70
+                dino[i].posColY = dino[i].Y + 30
 
-        #elif keys[pygame.K_SPACE] and allowSuperJump:
-        elif superJumping and allowSuperJump:
-            superJumpDef()
+                window.blit(dino[i].LowerImage[dino[i].updateSprite//4], (dino[i].X, dino[i].Y))            
 
-        else:
-            dinoIsLower = False
+            #if keys[pygame.K_UP]:
+            if pular:
+                jumpDef(i)
 
-    elif dinoIsJumping and not dinoIsSuperJumping: #DinoIsJumping
-        #if keys[pygame.K_DOWN]:
-        if abaixar:
-            lowerDef()
+            #elif keys[pygame.K_DOWN]:
+            elif abaixar:
+                lowerDef(i)
+
+            #elif keys[pygame.K_SPACE] and allowSuperJump:
+            elif superJumping and dino[i].allowSuperJump:
+                superJumpDef(i)
+
+            else:
+                dinoIsLower = False
+
+        elif dino[i].IsJumping and not dino[i].IsSuperJumping:  # DinoIsJumping
+            #if keys[pygame.K_DOWN]:
+            if abaixar:
+                lowerDef(i)
+            
+            if dino[i].CountJump >= -7.5:
+                upDown = 1
+                
+                if dino[i].CountJump < 0:
+                    upDown = -1
+                
+                dino[i].Y -= (dino[i].CountJump ** 2) * 0.5 * upDown
+
+                dino[i].CountJump -= 1
+
+            else:
+                dino[i].IsJumping = False
+                dino[i].CountJump = 7.5
+
+            dino[i].posY = dino[i].Y + 5
+
+            dino[i].posColX = dino[i].X + 40
+            dino[i].posColY = dino[i].Y + 35
+
+            window.blit(dino[i].JumpingImage, (dino[i].X, dino[i].Y))
+
+        elif dino[i].IsSuperJumping:  # DinoIsSUperJumping
+            #if keys[pygame.K_DOWN]:
+            if abaixar:
+                lowerDef(i)
+
+            if dino[i].CountJump >= -9:
+                upDown = 1
+                
+                if dino[i].CountJump < 0:
+                    upDown = -1
+                
+                dino[i].Y -= (dino[i].CountJump ** 2) * 0.5 * upDown
+
+                dino[i].CountJump -= 1
+
+            else:
+                dino[i].IsSuperJumping = False
+                dino[i].CountJump = 9
+
+            dino[i].posY = dino[i].Y + 5
+
+            dino[i].posColX = dino[i].X + 40
+            dino[i].posColY = dino[i].Y + 35
+
+            window.blit(dino[i].JumpingImage, (dino[i].X, dino[i].Y))
+
+        dino[i].updateSprite += 1
+
+        dino[i].height = dino[i].Y
+
+        if countGround % 500 == 0:
+            if dino[i].auxSuperJump != 7:
+                dino[i].auxSuperJump += 1
+
+            if dino[i].auxSuperJump == 7:
+                dino[i].allowSuperJump = True
+        '''
+        text = '['
+        auxText = ''
+
+        for i in range(auxSuperJump):
+            text += '#'
+
+        for i in range(7 - auxSuperJump):
+            auxText += '_'
+
+        text = text + auxText + ']'
+
+        #if(auxSuperJump == 7):
+        #    text = '[#ready#]'
         
-        if dinoCountJump >= -7.5:
-            upDown = 1
-            
-            if dinoCountJump < 0:
-                upDown = -1
-            
-            dinoY -= (dinoCountJump ** 2) * 0.5 * upDown
 
-            dinoCountJump -= 1
+        textSuperJump = fontBig.render(str(text), True, (83, 83, 83), (247, 247, 247)) 
 
-        else:
-            dinoIsJumping = False
-            dinoCountJump = 7.5
+        window.blit(fontMedium.render('SuperJump', True, (83, 83, 83), (247, 247, 247)) , (13, 10))
 
-        posDinoY = dinoY + 5
+        window.blit(textSuperJump, (10, 25))
+        '''
 
-        posDinoColX = dinoX + 40
-        posDinoColY = dinoY + 35
+def jumpDef(i):
+    global dino    
+    dino[i].IsJumping = True
+    dino[i].CountJump = 7.5
 
-        window.blit(dinoJumpingImage, (dinoX, dinoY))
-
-    elif dinoIsSuperJumping: #DinoIsSUperJumping
-        #if keys[pygame.K_DOWN]:
-        if abaixar:
-            lowerDef()
-
-        if dinoCountJump >= -9:
-            upDown = 1
-            
-            if dinoCountJump < 0:
-                upDown = -1
-            
-            dinoY -= (dinoCountJump ** 2) * 0.5 * upDown
-
-            dinoCountJump -= 1
-
-        else:
-            dinoIsSuperJumping = False
-            dinoCountJump = 9
-
-        posDinoY = dinoY + 5
-
-        posDinoColX = dinoX + 40
-        posDinoColY = dinoY + 35
-
-        window.blit(dinoJumpingImage, (dinoX, dinoY))  
-
-    
-    #TestReferenceToAI
-    #window.blit(pygame.image.load('../Sprites/redes.png'), (posDinoColX, posDinoColY))
-
-    updateDinoSprite += 1
-
-    heightDino = dinoY
-
-    if countGround % 500 == 0:
-
-        if auxSuperJump != 7:
-            auxSuperJump += 1
-
-        if auxSuperJump == 7:
-            allowSuperJump = True
-
-    text = '['
-    auxText = ''
-
-    for i in range(auxSuperJump):
-        text += '#'
-
-    for i in range(7 - auxSuperJump):
-        auxText += '_'
-
-    text = text + auxText + ']'
-
-    #if(auxSuperJump == 7):
-    #    text = '[#ready#]'
-
-
-    textSuperJump = fontBig.render(str(text), True, (83, 83, 83), (247, 247, 247)) 
-
-    window.blit(fontMedium.render('SuperJump', True, (83, 83, 83), (247, 247, 247)) , (13, 10))
-
-    window.blit(textSuperJump, (10, 25))
-
-def jumpDef():
-    global dinoIsJumping, dinoCountJump
-    
-    dinoIsJumping = True
-    dinoCountJump = 7.5
-
-def lowerDef():
-    global dinoIsJumping, dinoIsSuperJumping, dinoIsLower, dinoCountJump
-
-    if not dinoIsSuperJumping and not dinoIsJumping:
+def lowerDef(i):
+    global dino
+    if not dino[i].IsSuperJumping and not dino[i].IsJumping:
         dinoIsLower = True 
 
-    elif dinoIsSuperJumping or dinoIsJumping:
-        dinoCountJump -= 3
+    elif dino[i].IsSuperJumping or dino[i].IsJumping:
+        dino[i].CountJump -= 3
 
-def superJumpDef():
-    global dinoCountJump, dinoIsSuperJumping, allowSuperJump, auxSuperJump
-
-    dinoIsSuperJumping = True
-    dinoCountJump = 9
-    allowSuperJump = False
-    auxSuperJump = 0
+def superJumpDef(i):
+    global dino
+    dino[i].IsSuperJumping = True
+    dino[i].CountJump = 9
+    dino[i].allowSuperJump = False
+    dino[i].auxSuperJump = 0
 
 def cactusDef():
     #DefineWichCactusWillAppear
@@ -611,7 +559,6 @@ def cactusDef():
     updateCactus()
 
 def setCactus():
-
     global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB, auxMountainAppear, mountainCount, mountainExist
 
     if countGround == 1000:
@@ -752,12 +699,12 @@ def updateBird():
 
 def setObstacleSize():
     global widthCactus, heightCactusBegin, heightCactusEnd, auxCactusCollider
-    global widthObstacle, heightObstacle, distanceObstacle
+    global widthObstacle, heightObstacle, distanceObstacle, dino
 
     widthCactusA = cactusImage[cactusNumA].get_size()[0]
     widthCactusB = cactusImage[cactusNumB].get_size()[0]
 
-    if (cactusCountA < cactusCountB) and (cactusCountA < birdCount) and (cactusCountA < mountainCount) and (posDinoColX < cactusCountA + widthCactusA):
+    if (cactusCountA < cactusCountB) and (cactusCountA < birdCount) and (cactusCountA < mountainCount) and (dino[0].posColX < cactusCountA + widthCactusA):
         widthCactus = cactusImage[cactusNumA].get_size()[0]
 
         if (cactusNumA >= 0) and (cactusNumA <= 17):
@@ -780,11 +727,11 @@ def setObstacleSize():
 
         widthObstacle = widthCactus
         heightObstacle = 242 - ((heightCactusBegin + heightCactusEnd) / 2)
-        distanceObstacle = cactusCountA - posDinoX
+        distanceObstacle = cactusCountA - dino[0].posX
 
         auxCactusCollider = cactusCountA - 50
 
-    elif (cactusCountA > cactusCountB) and (birdCount > cactusCountB) and (mountainCount > cactusCountB) and (posDinoColX < cactusCountB + widthCactusB):
+    elif (cactusCountA > cactusCountB) and (birdCount > cactusCountB) and (mountainCount > cactusCountB) and (dino[0].posColX < cactusCountB + widthCactusB):
         widthCactus = cactusImage[cactusNumB].get_size()[0]        
 
         if (cactusNumB >= 0) and (cactusNumB <= 17):
@@ -807,84 +754,86 @@ def setObstacleSize():
 
         widthObstacle = widthCactus
         heightObstacle = 242 - ((heightCactusBegin + heightCactusEnd) / 2)
-        distanceObstacle = cactusCountB - posDinoX
+        distanceObstacle = cactusCountB - dino[0].posX
 
         auxCactusCollider = cactusCountB - 50
 
     else:
         auxCactusCollider = 950
 
-    if (mountainCount < cactusCountA) and (mountainCount < cactusCountB) and (mountainCount < birdCount) and (posDinoColX < mountainCount + 140):
+    if (mountainCount < cactusCountA) and (mountainCount < cactusCountB) and (mountainCount < birdCount) and (dino[0].posColX < mountainCount + 140):
         widthObstacle = 140
         heightObstacle = 110
-        distanceObstacle = mountainCount - posDinoX
+        distanceObstacle = mountainCount - dino[0].posX
 
-    if (birdCount < cactusCountA) and (birdCount < cactusCountB) and (birdCount < mountainCount) and (posDinoColX < birdCount + 60):
+    if (birdCount < cactusCountA) and (birdCount < cactusCountB) and (birdCount < mountainCount) and (dino[0].posColX < birdCount + 60):
         widthObstacle = 60
         heightObstacle = posBirdY
-        distanceObstacle = birdCount - posDinoX
+        distanceObstacle = birdCount - dino[0].posX
 
-def onColliderCactus():
-    global restartAll
+def onColliderCactus(i):
+    global restartAll, dino
 
-    if (posDinoColX > auxCactusCollider) and (posDinoColY > (245 - heightCactusBegin)) and (posDinoColX < (auxCactusCollider + (widthCactus / 2))):
-        restartAll = True
-        #print(entradas)
-        #dinoCerebro.train(entradas, [1, 0, 0])
+    if (dino[i].posColX > auxCactusCollider) and (dino[i].posColY > (245 - heightCactusBegin)) and (dino[i].posColX < (auxCactusCollider + (widthCactus / 2))):
+        #restartAll = True
+        dino[i].dead = True
 
-    elif (posDinoColX > (auxCactusCollider + (widthCactus / 2))) and (posDinoColY > (245 - heightCactusEnd)) and ((posDinoColX - 25) < (auxCactusCollider + widthCactus)):
-        restartAll = True
+    elif (dino[i].posColX > (auxCactusCollider + (widthCactus / 2))) and (dino[i].posColY > (245 - heightCactusEnd)) and ((dino[i].posColX - 25) < (auxCactusCollider + widthCactus)):
+        #restartAll = True
+        dino[i].dead = True
         
 
-def onColliderBird():
+def onColliderBird(i):
     global restartAll
 
-    if dinoIsLower:
-        if (posDinoColX > (birdCount - 50)) and (posDinoColX < ((birdCount + 60) - 50)) and (posDinoColY > (posBirdY + 10)) and (posDinoColY < (posBirdY + 42)):
-            restartAll = True
+    if dino[i].IsLower:
+        if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and (dino[i].posColY < (posBirdY + 42)):
+            #restartAll = True
+            dino[i].dead = True
 
-    elif dinoIsJumping:
-        if (posDinoColX > (birdCount - 50)) and (posDinoColX < ((birdCount + 60) - 50)) and ((posDinoColY - 20) > (posBirdY + 10)) and ((posDinoColY - 20) < (posBirdY + 42)):
-            restartAll = True   
+    elif dino[i].IsJumping:
+        if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and ((dino[i].posColY - 20) > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
+            #restartAll = True
+            dino[i].dead = True   
 
     else:
-        if (posDinoColX > (birdCount - 50)) and (posDinoColX < ((birdCount + 60) - 50)) and (posDinoColY > (posBirdY + 10)) and ((posDinoColY - 20) < (posBirdY + 42)):
-            restartAll = True   
+        if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
+            #restartAll = True
+            dino[i].dead = True
 
-def onColliderMountain():
+def onColliderMountain(i):
     global restartAll
 
     if mountainExist:
-        if (posDinoColX > (mountainCount - 190)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 175) + 50)):
-            restartAll = True
+        if (dino[i].posColX > (mountainCount - 190)) and (dino[i].posColY > 192) and (dino[i].posColX < ((mountainCount - 175) + 50)):
+            #restartAll = True
+            dino[i].dead = True
 
-        elif (posDinoColX > ((mountainCount - 190) + 50)) and (posDinoColY > 110) and (posDinoColX < ((mountainCount - 190) + 90)):
-            restartAll = True 
+        elif (dino[i].posColX > ((mountainCount - 190) + 50)) and (dino[i].posColY > 110) and (dino[i].posColX < ((mountainCount - 190) + 90)):
+            #restartAll = True
+            dino[i].dead = True
 
-        elif (posDinoColX > ((mountainCount - 190) + 90)) and (posDinoColY > 192) and (posDinoColX < ((mountainCount - 190) + 140)):
-            restartAll = True
+        elif (dino[i].posColX > ((mountainCount - 190) + 90)) and (dino[i].posColY > 192) and (dino[i].posColX < ((mountainCount - 190) + 140)):
+            #restartAll = True
+            dino[i].dead = True
 
 def RandomMutations():
-    global scoreDino, RangeRandom
-    # Ordenar dino por score
+    global dino, RangeRandom
+    #Ordenação de dino por score
     aux_trocar=[]
     for i in range(TamanhoPopulacao):
         for j in range(TamanhoPopulacao-1):
-            if(scoreDino[j] < scoreDino[j+1]):
+            if(dino[j].score < dino[j+1].score):
                 # Trocando "Cerebro"
-                aux_trocar = dino[j]
-                dino[j] = dino[j+1]
-                dino[j+1] = aux_trocar
-                #Trocando Score
-                aux_trocar = scoreDino[j]
-                scoreDino[j] = scoreDino[j+1]
-                scoreDino[j+1] = aux_trocar
+                aux_trocar = dino[j].cerebro
+                dino[j].cerebro = dino[j+1].cerebro
+                dino[j+1].cerebro = aux_trocar
     
     # Etapa de clonar individuo
-    step = 2
+    step = 10
     for i in range(step):
-        for j in range(step + i, TamanhoPopulacao):
-            dino[j] = dino[i]
+        for j in range(step + i, TamanhoPopulacao, step):
+            dino[j].cerebro = dino[i].cerebro
 
     #Aplicando random mutations
     for i in range(step, TamanhoPopulacao):
@@ -892,9 +841,8 @@ def RandomMutations():
         mutations = np.random.randint(0, int(RangeRandom)) + 1
 
         for j in range(mutations):
-            dino[i].mutacao()
+            dino[i].cerebro.mutacao()
 
-    print("Mutacao com sucesso")
     RangeRandom *= 0.99
     if RangeRandom < 20:
         RangeRandom = 20
