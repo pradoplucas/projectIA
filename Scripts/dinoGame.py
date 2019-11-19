@@ -6,12 +6,11 @@ import redeNeural2 as rn
 
 #####################__VARIABLES_TO_AI__######################
 # Inicializando a rede neural do jogo
-# 5 camadas de entrada, 5 camadas ocultas e 3 saídas
+# 5 camadas de entrada, 5 camadas ocultas e 1 saída
 dino = []
 TamanhoPopulacao = 150
-RangeRandom = 815 # O ideal é ser a quantidade de pesos da rede Neural
+RangeRandom = 30 # O ideal é ser a quantidade de pesos da rede Neural
 entradas = np.zeros(5)
-individuo = 0
 geracao = 0
 
 #Speed
@@ -243,8 +242,9 @@ def onUpdate():
     #Ações de colisão
     for i in range(TamanhoPopulacao):
         onColliderCactus(i)
-        onColliderMountain(i)
         onColliderBird(i)
+        #onColliderMountain(i)
+        
 
     #Verificação se todos os dino morreram
     cont = 0
@@ -402,10 +402,10 @@ def updateDino(i):
 
         #Calculando Previsão
         saidas, ocultas = dino[i].cerebro.predict(entradas)
-        pular = saidas[0] == 0.0
-        abaixar = saidas[1] == 0.0
-        superJumping = saidas[2] == 0.0
-
+        pular = saidas[0] > 0.7
+        abaixar = saidas[0] < 0.3
+        #superJumping = saidas[2] == 0.0
+        #print(saidas)
         '''
         if not pular:
             abaixar = saidas[1] > 0.9
@@ -446,13 +446,14 @@ def updateDino(i):
             elif abaixar:
                 lowerDef(i)
 
+            '''
             #elif keys[pygame.K_SPACE] and allowSuperJump:
             elif superJumping and dino[i].allowSuperJump:
                 superJumpDef(i)
-
+            
             else:
                 dinoIsLower = False
-
+            '''
         elif dino[i].IsJumping and not dino[i].IsSuperJumping:  # DinoIsJumping
             #if keys[pygame.K_DOWN]:
             if abaixar:
@@ -853,7 +854,7 @@ def RandomMutations():
     '''
 
     # Etapa de clonar individuo
-    step = 3
+    step = 1
     for i in range(step):
         for j in range(step + i, TamanhoPopulacao, step):
             rn.copy(dino[j].cerebro, dino[i].cerebro)
@@ -866,6 +867,10 @@ def RandomMutations():
         for j in range(mutations):
             dino[i].cerebro.mutacao()
 
+    print(dino[0].cerebro.bias_eo)
+    print(dino[0].cerebro.bias_os)
+    print(dino[0].cerebro.pesos_eo)
+    print(dino[0].cerebro.pesos_os)
     RangeRandom *= 0.99
     if RangeRandom < 20:
         RangeRandom = 20

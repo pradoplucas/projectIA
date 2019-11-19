@@ -5,7 +5,7 @@ import pygame
 class Dinossauro(object):
     def __init__(self):
         #Rede Neural para o Dino
-        self.cerebro = rn.Neural(5,10,3)
+        self.cerebro = rn.Neural(5,5,1)
 
         #Variáveis gerais para o dino
         self.score = 0

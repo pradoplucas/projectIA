@@ -106,11 +106,11 @@ class Neural(object):
 ################################## Funcões de Ativacao #########################################
 # Função genérica de ativação
 def funcaoAtivacao(x):
-    return relu(x)
+    return sigmoid(x)
 
 # Derivada da Função genérica de ativação
 def funcaoAtivacaoDerivada(x):
-    return drelu(x)
+    return dsigmoid(x)
 
 # Função de Ativação Sigmóide
 def sigmoid(x):
