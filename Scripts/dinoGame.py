@@ -299,7 +299,7 @@ def onRestartAll():
 
     birdExist = False
 
-    birdCount = 1250
+    birdCount = 1100
 
     birdPlace = -1
 
@@ -579,20 +579,20 @@ def setCactus():
             cactusNumA = random.randint(0, 33)
 
     elif countGround == 500:
-        '''
+        
         auxMountainAppear += 1
-        if auxMountainAppear == 4:
+        if auxMountainAppear == 2:
             auxMountainAppear = 0
-            mountainExist = True
-            mountainCount = 1100
+            #mountainExist = True
+            #mountainCount = 1100
+
+            setBird()
 
         else:
-        '''
-    
-        if random.randint(0, 9) >= 3:
-            cactusBExist = True
-            cactusCountB = 1000
-            cactusNumB = random.randint(0, 33)
+            if random.randint(0, 9) >= 3:
+                cactusBExist = True
+                cactusCountB = 1000
+                cactusNumB = random.randint(0, 33)
 
 def updateCactus():
     global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB, mountainExist, mountainCount
@@ -661,7 +661,7 @@ def updateCactus():
 
 def birdDef():
     #
-    setBird()
+    #setBird()
 
     #
     updateBird()
@@ -669,14 +669,15 @@ def birdDef():
 def setBird():
     global birdExist, birdCount, birdPlace, auxCountBird
     #if score > 500:
-    if countGround % 1000 == 0:
-        auxCountBird += 1
+    #if countGround % 1000 == 0:
+    #    auxCountBird += 1
 
-        if random.randint(0, 9) >= 0 and auxCountBird == 2:
-            auxCountBird = 0
-            birdExist = True
-            birdCount = 1250
-            birdPlace = random.randint(0, 2)
+    #if random.randint(0, 9) >= 0 and auxCountBird == 2:
+
+    auxCountBird = 0
+    birdExist = True
+    birdCount = 1100
+    birdPlace = random.randint(0, 2)
 
 def updateBird():
     global birdCount, posBirdY, updateBirdSprite, birdExist
@@ -705,11 +706,11 @@ def updateBird():
 
         else:
             birdExist= False
-            birdCount = 1250
+            birdCount = 1100
 
 
     else:
-        birdCount = 1250
+        birdCount = 1100
 
 def setObstacleSize():
     global widthCactus, heightCactusBegin, heightCactusEnd, auxCactusCollider
