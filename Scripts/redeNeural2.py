@@ -5,28 +5,28 @@ import numpy as np
 class Neural(object):
     '''
     e -> Camada de Entrada
-    o -> Camda Oculta
+    o -> Camada Oculta
     s -> Camada de Saida
     '''
-    def __init__(self, nos_e, nos_o, nos_s ):
+    def __init__(self, nos_e, nos_o, nos_s, data_pesos=None):
         self.nos_e = nos_e
         self.nos_o = nos_o
         self.nos_s = nos_s
         
-        # Matriz correspondente ao número de neurônios
-        self.bias_eo = np.random.randn(self.nos_o, 1)
-        self.bias_os = np.random.randn(self.nos_s, 1)
-        #self.bias_eo = np.ones((self.nos_o, 1))
-        #self.bias_os = np.ones((self.nos_s, 1))
+        if data_pesos:
+            self.bias_eo = data_pesos[0]
+            self.bias_os = data_pesos[1]
+            self.pesos_eo = data_pesos[2]
+            self.pesos_os = data_pesos[3]
+        else:
+            # Matriz correspondente ao número de neurônios
+            self.bias_eo = np.random.randn(self.nos_o, 1)
+            self.bias_os = np.random.randn(self.nos_s, 1)
 
-        # Para o projeto, vai ser considerado pesos com valores aleatorios mesmo
-        # Mas existe estudo para uma melhor escolha dos pesos
-        self.pesos_eo = np.random.randn(self.nos_o, self.nos_e)
-        self.pesos_os = np.random.randn(self.nos_s, self.nos_o)
-
-        #self.pesos_eo = np.ones((self.nos_o, self.nos_e))
-        #self.pesos_os = np.ones((self.nos_s, self.nos_o))
-
+            # Para o projeto, vai ser considerado pesos com valores aleatorios mesmo
+            # Mas existe estudo para uma melhor escolha dos pesos
+            self.pesos_eo = np.random.randn(self.nos_o, self.nos_e)
+            self.pesos_os = np.random.randn(self.nos_s, self.nos_o)
 
         self.taxa_aprendizagem = 0.1
 
@@ -76,6 +76,33 @@ class Neural(object):
         self.bias_eo += gradiente_oculta
         self.pesos_eo += np.dot(gradiente_oculta, entrada.transpose())
 
+    ## Mutação
+    def mutacao(self):
+        '''
+        0 -> bias_eo
+        1 -> bias_os
+        2 -> pesos_eo
+        3 -> pesos_os
+        '''
+        pesos_selecionados = np.random.randint(0,3)
+        tipo_mutacao = np.random.randint(0, 2)
+
+        if pesos_selecionados == 0:
+            i = np.random.randint(0, self.nos_o)
+            self.bias_eo[i] = mutacaoMatriz(tipo_mutacao, self.bias_eo[i])
+        elif pesos_selecionados == 1:
+            i = np.random.randint(0, self.nos_s)
+            self.bias_os[i] = mutacaoMatriz(tipo_mutacao, self.bias_os[i])
+        elif pesos_selecionados == 2:
+            i = np.random.randint(0, self.nos_o)
+            j = np.random.randint(0, self.nos_e)
+            self.pesos_eo[i,j] = mutacaoMatriz(tipo_mutacao, self.pesos_eo[i,j])
+        elif pesos_selecionados == 3:
+            i = np.random.randint(0, self.nos_s)
+            j = np.random.randint(0, self.nos_o)
+            self.pesos_os[i,j] = mutacaoMatriz(tipo_mutacao, self.pesos_os[i,j])
+
+
 ################################## Funcões de Ativacao #########################################
 # Função genérica de ativação
 def funcaoAtivacao(x):
@@ -94,18 +121,37 @@ def dsigmoid(x):
     return x * (1-x)
 
 def relu(x):
-    for elemento in (x):
-        if(elemento < 0):
-            elemento = 0
-        
+    for i in range(len(x)):
+        if(x[i] < 0):
+            x[i] = 0
     return x
 
 def drelu(x):
-    for elemento in len(x):
-        if(elemento < 0):
-            elemento = 0
+    for i in range(len(x)):
+        if(x[i] < 0):
+            x[i] = 0
         else:
-            elemento = 1
+            x[i] = 1
     return x
 
+#Função para auxiliar a copiar valores
+def copy(var1, var2):
+    var1.nos_e = var2.nos_e
+    var1.nos_o = var2.nos_o
+    var1.nos_s = var2.nos_s
+    var1.bias_eo = var2.bias_eo.copy()
+    var1.bias_os = var2.bias_os.copy()
+    var1.pesos_eo = var2.pesos_eo.copy()
+    var1.pesos_os = var2.pesos_os.copy()
 
+## Função para auxiliar na mutação
+def mutacaoMatriz(tipo_mutacao, valor):
+    if (tipo_mutacao == 0):         #Recebe valor aleatorio
+        valor = np.random.randn()  
+    elif (tipo_mutacao == 2):       #Multiplicacao Aleatoria
+        multiplicador = (np.random.randint(0,10001)/10000) + 0.5
+        valor *= multiplicador
+    elif (tipo_mutacao == 3):       #Soma aleatoria
+        somador = np.random.randint(0,100)
+        valor += somador
+    return valor
