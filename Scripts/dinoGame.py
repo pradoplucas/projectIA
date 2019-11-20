@@ -242,8 +242,11 @@ def onUpdate():
     #Ações de colisão
     for i in range(TamanhoPopulacao):
         onColliderCactus(i)
-        onColliderBird(i)
+        #onColliderBird(i)
         #onColliderMountain(i)
+
+    for i in range(TamanhoPopulacao):
+        onColliderBird(i)
         
 
     #Verificação se todos os dino morreram
@@ -265,7 +268,7 @@ def onRestartAll():
     global geracao, individuo, dino
 
     #Apenas para ter noção do que tá acontecendo
-    print(f'Geração: {geracao + 1}')
+    print(f'Geração {geracao + 1}')
     
     pygame.time.delay(500)
 
@@ -475,8 +478,8 @@ def updateDino(i):
 
             dino[i].posY = dino[i].Y + 5
 
-            dino[i].posColX = dino[i].X + 40
-            dino[i].posColY = dino[i].Y + 35
+            dino[i].posColX = dino[i].X + 30
+            dino[i].posColY = dino[i].Y + 30
 
             window.blit(dino[i].JumpingImage, (dino[i].X, dino[i].Y))
 
@@ -516,6 +519,9 @@ def updateDino(i):
 
             if dino[i].auxSuperJump == 7:
                 dino[i].allowSuperJump = True
+
+        window.blit(pygame.image.load('../Sprites/redes.png'), (dino[i].posColX, dino[i].posColY))
+
         '''
         text = '['
         auxText = ''
@@ -677,7 +683,7 @@ def setBird():
     auxCountBird = 0
     birdExist = True
     birdCount = 1100
-    birdPlace = random.randint(0, 2)
+    birdPlace = random.randint(1, 2)
 
 def updateBird():
     global birdCount, posBirdY, updateBirdSprite, birdExist
@@ -796,24 +802,33 @@ def onColliderCactus(i):
     elif (dino[i].posColX > (auxCactusCollider + (widthCactus / 2))) and (dino[i].posColY > (245 - heightCactusEnd)) and ((dino[i].posColX - 25) < (auxCactusCollider + widthCactus)):
         #restartAll = True
         dino[i].dead = True
-        
+
+#xy = 0
+
 def onColliderBird(i):
-    global restartAll
+    global restartAll, xy
 
     if dino[i].IsLower:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and (dino[i].posColY < (posBirdY + 42)):
             #restartAll = True
             dino[i].dead = True
+            #xy += 1
+            #print(f'A: {xy}\t I: {i}')
+
 
     elif dino[i].IsJumping:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and ((dino[i].posColY - 20) > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
             #restartAll = True
             dino[i].dead = True  
+            #xy += 1
+            #print(f'B: {xy}\t I: {i}')
 
     else:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
             #restartAll = True
             dino[i].dead = True
+            #xy += 1
+            #print(f'C: {xy}\t I: {i}')
 
 def onColliderMountain(i):
     global restartAll
@@ -868,13 +883,27 @@ def RandomMutations():
         for j in range(mutations):
             dino[i].cerebro.mutacao()
 
-    print(dino[0].cerebro.bias_eo)
-    print(dino[0].cerebro.bias_os)
-    print(dino[0].cerebro.pesos_eo)
-    print(dino[0].cerebro.pesos_os)
+    #print(dino[0].cerebro.bias_eo)
+    #print(dino[0].cerebro.bias_os)
+    #print(dino[0].cerebro.pesos_eo)
+    #print(dino[0].cerebro.pesos_os)
+
+    testTest = 'Geração: ' + str(geracao + 1)
+    testTest += '\n\n--Bias_EO-- \n' + str(dino[0].cerebro.bias_eo)
+    testTest += '\n\n--Bias_OS--\n' + str(dino[0].cerebro.bias_os)
+    testTest += '\n\n--Pesos_EO--\n' + str(dino[0].cerebro.pesos_eo)
+    testTest += '\n\n--Pesos_OS--\n' + str(dino[0].cerebro.pesos_os)
+
+    writeFile(testTest)
+
     RangeRandom *= 0.99
     if RangeRandom < 20:
         RangeRandom = 20
+
+
+def writeFile(text):
+    with open('bests.txt', 'a') as file:
+        file.write(text + '\n\n\n\n')
 
 main()
 
