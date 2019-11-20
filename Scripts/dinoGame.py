@@ -239,15 +239,14 @@ def onUpdate():
     #
     setObstacleSize()
 
+    for i in range(TamanhoPopulacao):
+        onColliderBird(i)
+
     #Ações de colisão
     for i in range(TamanhoPopulacao):
         onColliderCactus(i)
         #onColliderBird(i)
         #onColliderMountain(i)
-
-    for i in range(TamanhoPopulacao):
-        onColliderBird(i)
-        
 
     #Verificação se todos os dino morreram
     cont = 0
