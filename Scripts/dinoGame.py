@@ -519,7 +519,7 @@ def updateDino(i):
             if dino[i].auxSuperJump == 7:
                 dino[i].allowSuperJump = True
 
-        window.blit(pygame.image.load('../Sprites/redes.png'), (dino[i].posColX, dino[i].posColY))
+        #window.blit(pygame.image.load('../Sprites/redes.png'), (dino[i].posColX, dino[i].posColY))
 
         '''
         text = '['
