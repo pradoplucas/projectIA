@@ -257,7 +257,7 @@ def onUpdate():
             restartAll = True
     
     if restartAll:
-        RandomMutations()
+        GeneticChanges()
         geracao += 1
         onRestartAll()
 
@@ -845,7 +845,10 @@ def onColliderMountain(i):
             #restartAll = True
             dino[i].dead = True
 
-def RandomMutations():
+#def geneticCrossover():
+
+
+def GeneticChanges():
     global dino, RangeRandom
     #Ordenação de dino por score
     aux_trocar=dino[0].cerebro
@@ -867,6 +870,8 @@ def RandomMutations():
             melhordino = dino[i].score
     dino[0] = melhordino
     '''
+
+
 
     # Etapa de clonar individuo
     step = 1
