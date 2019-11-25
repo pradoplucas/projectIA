@@ -1,8 +1,8 @@
 import pygame
 import random
 import numpy as np
-import dinossauro as dn
-import redeNeural2 as rn
+import dinoClasse as dn
+import redeHibrida as rn
 
 #####################__VARIABLES_TO_AI__######################
 # Inicializando a rede neural do jogo
@@ -186,7 +186,7 @@ def main():
 
     #Iniciar dinossauros
     for i in range(TamanhoPopulacao):
-        dino.append(dn.Dinossauro())
+        dino.append(dn.DinoClasse())
 
     #InfinitLoop
     while isPlaying:

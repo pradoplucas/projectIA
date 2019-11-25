@@ -1,8 +1,8 @@
-import redeNeural2 as rn
+import redeHibrida as rn
 import pygame
 
 # Classe para a auxiliar na manipulacão dos dinossauros
-class Dinossauro(object):
+class DinoClasse(object):
     def __init__(self):
         #Rede Neural para o Dino
         self.cerebro = rn.Neural(5,5,1)
