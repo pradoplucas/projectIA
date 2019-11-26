@@ -11,7 +11,7 @@ dino = []
 TamanhoPopulacao = 1
 RangeRandom = 30 #O ideal é ser a quantidade de pesos da rede Neural
 entradas = np.zeros(5)
-entradasCerebro = np.zeros(5)
+entradasAntesAcao = np.zeros(5)
 epoca = 0
 
 #Speed
@@ -299,7 +299,7 @@ def onRestartAll():
 
     birdExist = False
 
-    birdCount = 1250
+    birdCount = 1100
 
     birdPlace = -1
 
@@ -390,7 +390,7 @@ def updateGround():
     #velocidades possíveis [10, 12.5, 20, 25] = 4
 
 def updateDino(i):
-    global dino
+    global dino, entradasAntesAcao
 
     if not dino[i].dead:
         # Alimentando entrada da rede Neural
@@ -403,7 +403,7 @@ def updateDino(i):
         #Calculando Previsão
         saidas, ocultas = dino[i].cerebro.predict(entradas)
         pular = saidas[0] > 0.7
-        abaixar = saidas[0] < 0.3
+        abaixar = saidas[0] < 0.4
         #superJumping = saidas[2] == 0.0
         #print(saidas)
         '''
@@ -440,6 +440,7 @@ def updateDino(i):
 
             #if keys[pygame.K_UP]:
             if pular:
+                entradasAntesAcao = entradas
                 jumpDef(i)
 
             #elif keys[pygame.K_DOWN]:
@@ -579,20 +580,20 @@ def setCactus():
             cactusNumA = random.randint(0, 33)
 
     elif countGround == 500:
-        '''
+
         auxMountainAppear += 1
         if auxMountainAppear == 4:
             auxMountainAppear = 0
-            mountainExist = True
-            mountainCount = 1100
+            #mountainExist = True
+            #mountainCount = 1100
+
+            setBird()
 
         else:
-        '''
-    
-        if random.randint(0, 9) >= 3:
-            cactusBExist = True
-            cactusCountB = 1000
-            cactusNumB = random.randint(0, 33)
+            if random.randint(0, 9) >= 3:
+                cactusBExist = True
+                cactusCountB = 1000
+                cactusNumB = random.randint(0, 33)
 
 def updateCactus():
     global cactusAExist, cactusBExist, cactusNumA, cactusNumB, cactusCountA, cactusCountB, mountainExist, mountainCount
@@ -661,7 +662,7 @@ def updateCactus():
 
 def birdDef():
     #
-    setBird()
+    #setBird()
 
     #
     updateBird()
@@ -669,14 +670,15 @@ def birdDef():
 def setBird():
     global birdExist, birdCount, birdPlace, auxCountBird
     #if score > 500:
-    if countGround % 1000 == 0:
-        auxCountBird += 1
+    #if countGround % 1000 == 0:
+    #    auxCountBird += 1
 
-        if random.randint(0, 9) >= 0 and auxCountBird == 2:
-            auxCountBird = 0
-            birdExist = True
-            birdCount = 1250
-            birdPlace = random.randint(0, 2)
+    #    if random.randint(0, 9) >= 0 and auxCountBird == 2:
+
+    auxCountBird = 0
+    birdExist = True
+    birdCount = 1100
+    birdPlace = random.randint(0, 2)
 
 def updateBird():
     global birdCount, posBirdY, updateBirdSprite, birdExist
@@ -705,11 +707,11 @@ def updateBird():
 
         else:
             birdExist= False
-            birdCount = 1250
+            birdCount = 1100
 
 
     else:
-        birdCount = 1250
+        birdCount = 1100
 
 def setObstacleSize():
     global widthCactus, heightCactusBegin, heightCactusEnd, auxCactusCollider
@@ -786,19 +788,24 @@ def setObstacleSize():
         distanceObstacle = birdCount - dino[0].posX
 
 def onColliderCactus(i):
-    global restartAll, dino
+    global restartAll, dino, entradasAntesAcao
 
     if (dino[i].posColX > auxCactusCollider) and (dino[i].posColY > (245 - heightCactusBegin)) and (dino[i].posColX < (auxCactusCollider + (widthCactus / 2))):
         #restartAll = True
         dino[i].dead = True
-        dino[i].cerebro.train(entradas, [1])
-        print('Colisão 1')
+        if dino[i].IsJumping:
+            dino[i].cerebro.train(entradasAntesAcao, [0])
+        else:
+            dino[i].cerebro.train(entradas, [1])
+        
 
     elif (dino[i].posColX > (auxCactusCollider + (widthCactus / 2))) and (dino[i].posColY > (245 - heightCactusEnd)) and ((dino[i].posColX - 25) < (auxCactusCollider + widthCactus)):
         #restartAll = True
+        if dino[i].IsJumping:
+            dino[i].cerebro.train(entradasAntesAcao, [0])
+        else:
+            dino[i].cerebro.train(entradas, [1])
         dino[i].dead = True
-        dino[i].cerebro.train(entradas, [1])
-        print('Colisão 2')
         
 def onColliderBird(i):
     global restartAll
@@ -806,16 +813,28 @@ def onColliderBird(i):
     if dino[i].IsLower:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and (dino[i].posColY < (posBirdY + 42)):
             #restartAll = True
+            if dino[i].IsJumping:
+                dino[i].cerebro.train(entradasAntesAcao, [0])
+            else:
+                dino[i].cerebro.train(entradas, [1])
             dino[i].dead = True
 
     elif dino[i].IsJumping:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and ((dino[i].posColY - 20) > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
             #restartAll = True
+            if dino[i].IsJumping:
+                dino[i].cerebro.train(entradasAntesAcao, [0])
+            else:
+                dino[i].cerebro.train(entradas, [1])
             dino[i].dead = True
 
     else:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
             #restartAll = True
+            if dino[i].IsJumping:
+                dino[i].cerebro.train(entradasAntesAcao, [0])
+            else:
+                dino[i].cerebro.train(entradas, [1])
             dino[i].dead = True
 
 def onColliderMountain(i):
