@@ -3,16 +3,14 @@ import random
 import numpy as np
 import dinoClasse as dn
 import dinoRedeNeural as rn
+import dinoAlgGenetico as ag
 
 #####################__VARIABLES_TO_AI__######################
 # Inicializando a rede neural do jogo
 # 5 camadas de entrada, 5 camadas ocultas e 1 saída
 dino = []
-TamanhoPopulacao = 0
-RangeRandom = 30 # O ideal é ser a quantidade de pesos da rede Neural
 entradas = np.zeros(5)
 entradasCerebro = np.zeros(5)
-NumGeracaoEpoca = 0
 stringGeracaoEpoca = ''
 
 isGenetic = False
@@ -112,6 +110,9 @@ textScore = 0
 #
 textSuperJump = 0
 
+#DefineIfTheGameIsRunningOrNot
+isPlaying = True
+
 ##############################################################
 
 ##########################__IMAGES__##########################
@@ -181,48 +182,44 @@ fontSmall = pygame.font.Font('freesansbold.ttf', 8)
 ##############################################################
 
 def main():
-    global countFrames
-
-    #DefineIfTheGameIsRunningOrNot
-    isPlaying = True
+    global countFrames, isPlaying
 
     #FPS
     framesPerSecond = pygame.time.Clock()
 
-    menu(framesPerSecond)
+    if menu(framesPerSecond):
+        print(stringGeracaoEpoca + ' 1')
 
-    print(stringGeracaoEpoca + ' 1')
+        #Iniciar dinossauros
+        for i in range(ag.TamanhoPopulacao):
+            dino.append(dn.DinoClasse())
 
-    #Iniciar dinossauros
-    for i in range(TamanhoPopulacao):
-        dino.append(dn.DinoClasse())
+        #InfinitLoop
+        while isPlaying:
+            #DefineTheFPSOfGmae
+            framesPerSecond.tick(FPS)
+        
+            #NumberOfFrames
+            countFrames += 1
 
-    #InfinitLoop
-    while isPlaying:
-        #DefineTheFPSOfGmae
-        framesPerSecond.tick(FPS)
-    
-        #CloseTheGame
-        for event in pygame.event.get():
-            if (event.type == pygame.QUIT) or pygame.key.get_pressed()[pygame.K_ESCAPE]:   
-                isPlaying = False
+            #ThingsToDo
+            onUpdate()
 
-        #NumberOfFrames
-        countFrames += 1
+            #CloseTheGame
+            for event in pygame.event.get():
+                if (event.type == pygame.QUIT) or pygame.key.get_pressed()[pygame.K_ESCAPE]:   
+                    isPlaying = False
 
-        #ThingsToDo
-        onUpdate()
-
-        #Update
-        pygame.display.update()
+            #Update
+            pygame.display.update()
 
 def onUpdate():
-    global restartAll, NumGeracaoEpoca
+    global restartAll, dino
 
     #SetBackgroundInEachFrame
     window.blit(background, (-50, -50))
 
-    textNumGeracaoEpoca= fontBig.render(str(f'{stringGeracaoEpoca} {NumGeracaoEpoca + 1}'), True, (83, 83, 83), (247, 247, 247)) 
+    textNumGeracaoEpoca= fontBig.render(str(f'{stringGeracaoEpoca} {ag.NumGeracaoEpoca + 1}'), True, (83, 83, 83), (247, 247, 247)) 
     window.blit(textNumGeracaoEpoca, (13, 10))
 
     #DefineTheScore
@@ -235,7 +232,7 @@ def onUpdate():
     updateGround()
 
     #ChangesInDinoPosition
-    for i in range(TamanhoPopulacao):
+    for i in range(ag.TamanhoPopulacao):
         updateDino(i)
 
     #FunctionsRelatedWithCactus
@@ -248,32 +245,38 @@ def onUpdate():
     setObstacleSize()
 
     #Ações de colisão
-    for i in range(TamanhoPopulacao):
+    for i in range(ag.TamanhoPopulacao):
         onColliderCactus(i)
         onColliderBird(i)
         #onColliderMountain(i)
 
-    #Verificação se todos os dino morreram
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_r]:
+        for i in range(ag.TamanhoPopulacao):
+            dino[i].dead = True
+
+    #Verificação se todos os dinos morreram
     cont = 0
-    for i in range(TamanhoPopulacao):
+    for i in range(ag.TamanhoPopulacao):
         if dino[i].dead:
             cont += 1 
-        if cont == TamanhoPopulacao:
+        if cont == ag.TamanhoPopulacao:
             restartAll = True
-    
+
     if restartAll:
         if isGenetic:
-            GeneticChanges()
+            ag.GeneticChanges(dino)
 
-        NumGeracaoEpoca += 1
+        ag.NumGeracaoEpoca += 1
         onRestartAll()
 
 def menu(framesPerSecond):
-    global isGenetic, TamanhoPopulacao, stringGeracaoEpoca
+    global isGenetic, stringGeracaoEpoca, isPlaying
     auxMenu = True
 
     while auxMenu:
-        framesPerSecond.tick(10)
+        framesPerSecond.tick(30)
 
         #SetBackgroundInEachFrame
         window.blit(logoMenu, (0, 0))
@@ -283,29 +286,31 @@ def menu(framesPerSecond):
         if keys[pygame.K_KP1] or keys[pygame.K_1]:
             auxMenu = False
             isGenetic = False
-            TamanhoPopulacao = 1
+            ag.TamanhoPopulacao = 1
             stringGeracaoEpoca = 'Época'
 
 
         elif keys[pygame.K_KP2] or keys[pygame.K_2]:
             auxMenu = False
             isGenetic = True
-            TamanhoPopulacao = 150
+            ag.TamanhoPopulacao = 150
             stringGeracaoEpoca = 'Geração'
 
         for event in pygame.event.get():
             if (event.type == pygame.QUIT) or pygame.key.get_pressed()[pygame.K_ESCAPE]:   
-                pygame.quit()
+                return False
 
         pygame.display.update()
+    
+    return True
 
 def onRestartAll():
     global restartAll, speed, countFrames, countGround, score, dino, cactusAExist, cactusBExist, cactusCountA, cactusCountB
     global birdExist, birdCount, birdPlace, auxCountBird, auxCactusCollider, auxMountainAppear, mountainExist, mountainCount
-    global NumGeracaoEpoca, individuo, dino
+    global dino
 
     #Apenas para ter noção do que tá acontecendo
-    print(f'Geração {NumGeracaoEpoca + 1}')
+    print(f'Geração {ag.NumGeracaoEpoca + 1}')
     
     pygame.time.delay(500)
 
@@ -319,7 +324,7 @@ def onRestartAll():
 
     score = 0
 
-    for i in range(TamanhoPopulacao):
+    for i in range(ag.TamanhoPopulacao):
         dino[i].score = 0
         dino[i].IsJumping = False
         dino[i].IsSuperJumping = False
@@ -369,7 +374,7 @@ def setScore():
     score = countFrames // 4
     
     #Setando score para cada dino
-    for i in range(TamanhoPopulacao):
+    for i in range(ag.TamanhoPopulacao):
         if not dino[i].dead:
             dino[i].score = score
     
@@ -430,7 +435,7 @@ def updateGround():
     #velocidades possíveis [10, 12.5, 20, 25] = 4
 
 def updateDino(i):
-    global dino
+    global dino, entradasAntesAcao
 
     if not dino[i].dead:
         # Alimentando entrada da rede Neural
@@ -443,7 +448,7 @@ def updateDino(i):
         #Calculando Previsão
         saidas, ocultas = dino[i].cerebro.predict(entradas)
         pular = saidas[0] > 0.7
-        abaixar = saidas[0] < 0.3
+        abaixar = saidas[0] < 0.4
         #superJumping = saidas[2] == 0.0
         #print(saidas)
         '''
@@ -480,6 +485,7 @@ def updateDino(i):
 
             #if keys[pygame.K_UP]:
             if pular:
+                entradasAntesAcao = entradas
                 jumpDef(i)
 
             #elif keys[pygame.K_DOWN]:
@@ -830,23 +836,27 @@ def setObstacleSize():
         distanceObstacle = birdCount - dino[0].posX
 
 def onColliderCactus(i):
-    global restartAll, dino
+    global restartAll, dino, entradasAntesAcao
 
     if (dino[i].posColX > auxCactusCollider) and (dino[i].posColY > (245 - heightCactusBegin)) and (dino[i].posColX < (auxCactusCollider + (widthCactus / 2))):
         #restartAll = True
         dino[i].dead = True
         
-        if not isGenetic:
-            dino[i].cerebro.train(entradas, [1])
-            print('Colisão 1')
+        if not isGenetic:        
+            if dino[i].IsJumping:
+                dino[i].cerebro.train(entradasAntesAcao, [0])
+            else:
+                dino[i].cerebro.train(entradas, [1])
 
     elif (dino[i].posColX > (auxCactusCollider + (widthCactus / 2))) and (dino[i].posColY > (245 - heightCactusEnd)) and ((dino[i].posColX - 25) < (auxCactusCollider + widthCactus)):
         #restartAll = True
         dino[i].dead = True
         
         if not isGenetic:
-            dino[i].cerebro.train(entradas, [1])
-            print('Colisão 2')
+            if dino[i].IsJumping:
+                dino[i].cerebro.train(entradasAntesAcao, [0])
+            else:
+                dino[i].cerebro.train(entradas, [1])
 
 def onColliderBird(i):
     global restartAll
@@ -856,92 +866,33 @@ def onColliderBird(i):
             #restartAll = True
             dino[i].dead = True
 
+            if not isGenetic:        
+                if dino[i].IsJumping:
+                    dino[i].cerebro.train(entradasAntesAcao, [0])
+                else:
+                    dino[i].cerebro.train(entradas, [1])
+
     elif dino[i].IsJumping:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and ((dino[i].posColY - 20) > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
-            #restartAll = True
             dino[i].dead = True  
+
+            if not isGenetic:        
+                if dino[i].IsJumping:
+                    dino[i].cerebro.train(entradasAntesAcao, [0])
+                else:
+                    dino[i].cerebro.train(entradas, [1])
 
     else:
         if (dino[i].posColX > (birdCount - 50)) and (dino[i].posColX < ((birdCount + 60) - 50)) and (dino[i].posColY > (posBirdY + 10)) and ((dino[i].posColY - 20) < (posBirdY + 42)):
-            #restartAll = True
             dino[i].dead = True
 
-def onColliderMountain(i):
-    global restartAll
+            if not isGenetic:        
+                if dino[i].IsJumping:
+                    dino[i].cerebro.train(entradasAntesAcao, [0])
+                else:
+                    dino[i].cerebro.train(entradas, [1])
 
-    if mountainExist:
-        if (dino[i].posColX > (mountainCount - 190)) and (dino[i].posColY > 192) and (dino[i].posColX < ((mountainCount - 175) + 50)):
-            #restartAll = True
-            dino[i].dead = True
-
-        elif (dino[i].posColX > ((mountainCount - 190) + 50)) and (dino[i].posColY > 110) and (dino[i].posColX < ((mountainCount - 190) + 90)):
-            #restartAll = True
-            dino[i].dead = True
-
-        elif (dino[i].posColX > ((mountainCount - 190) + 90)) and (dino[i].posColY > 192) and (dino[i].posColX < ((mountainCount - 190) + 140)):
-            #restartAll = True
-            dino[i].dead = True
-
-#def geneticCrossover():
-
-def GeneticChanges():
-    global dino, RangeRandom
-    #Ordenação de dino por score
-    aux_trocar=dino[0].cerebro
-    for i in range(TamanhoPopulacao):
-        for j in range(TamanhoPopulacao-1):
-            if(dino[j].score < dino[j+1].score):
-                # Trocando "Cerebro"
-                rn.copy(aux_trocar, dino[j].cerebro)
-                rn.copy(dino[j].cerebro, dino[j+1].cerebro)
-                rn.copy(dino[j+1].cerebro, aux_trocar)
-                '''
-                aux_trocar = dino[j].cerebro.copy()
-                dino[j].cerebro = dino[j+1].cerebro.copy()
-                dino[j+1].cerebro = aux_trocar.copy()
-    
-    melhordino = dino[0]
-    for i in range(1, TamanhoPopulacao):
-        if(dino[i].score < melhordino.score):
-            melhordino = dino[i].score
-    dino[0] = melhordino
-    '''
-
-    # Etapa de clonar individuo
-    step = 1
-    for i in range(step):
-        for j in range(step + i, TamanhoPopulacao, step):
-            rn.copy(dino[j].cerebro, dino[i].cerebro)
-
-    #Aplicando random mutations
-    for i in range(step, TamanhoPopulacao):
-        tipo = 0
-        mutations = np.random.randint(0, int(RangeRandom)) + 1
-
-        for j in range(mutations):
-            dino[i].cerebro.mutacao()
-
-    #print(dino[0].cerebro.bias_eo)
-    #print(dino[0].cerebro.bias_os)
-    #print(dino[0].cerebro.pesos_eo)
-    #print(dino[0].cerebro.pesos_os)
-
-    testTest = 'Geração: ' + str(NumGeracaoEpoca + 1)
-    testTest += '\n\n--Bias_EO-- \n' + str(dino[0].cerebro.bias_eo)
-    testTest += '\n\n--Bias_OS--\n' + str(dino[0].cerebro.bias_os)
-    testTest += '\n\n--Pesos_EO--\n' + str(dino[0].cerebro.pesos_eo)
-    testTest += '\n\n--Pesos_OS--\n' + str(dino[0].cerebro.pesos_os)
-
-    writeFile(testTest)
-
-    RangeRandom *= 0.99
-    if RangeRandom < 20:
-        RangeRandom = 20
-
-def writeFile(text):
-    with open('bests.txt', 'a') as file:
-        file.write(text + '\n\n\n\n')
-
-main()
+if __name__ == '__main__':
+    main()
 
 pygame.quit()

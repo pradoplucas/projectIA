@@ -136,9 +136,9 @@ def drelu(x):
 
 #Função para auxiliar a copiar valores
 def copy(var1, var2):
-    var1.nos_e = var2.nos_e
-    var1.nos_o = var2.nos_o
-    var1.nos_s = var2.nos_s
+    #var1.nos_e = var2.nos_e
+    #var1.nos_o = var2.nos_o
+    #var1.nos_s = var2.nos_s
     var1.bias_eo = var2.bias_eo.copy()
     var1.bias_os = var2.bias_os.copy()
     var1.pesos_eo = var2.pesos_eo.copy()
