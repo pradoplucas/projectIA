@@ -1,77 +1,81 @@
-# Nome do produto
-> Descrição curta sobre o que seu projeto faz.
+# Super Runner T-Rex
+> Projeto para a disciplina de Inteligência Artificial (IA).
 
-[![NPM Version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
-[![Downloads Stats][npm-downloads]][npm-url]
+O projeto engloba a recriação do jogo na linguagem _Python_, e a criação de uma IA para aprender a joga-lo, sendo que esta IA foi desenvolvida utilizando dois métodos (Redes Neurais Artificiais com _Backpropagation_ e Redes Neurais Artificiais com Algoritmo Genético).
 
-De um a dois parágrafos sobre o que é seu projeto e o que ele faz.
-
-![](../header.png)
+![](Sprites/Scenario/logo.png)
 
 ## Instalação
 
-OS X & Linux:
+Para a utilização da aplicação, serão necessários alguns componentes, como a linguagem _Python_, o gerenciador de pacotes _Pip_ e as bibliotecas _Pygame_ e _NumPy_.
 
+#### OS X & Linux:
+
+Python 3.7
 ```sh
-npm install my-crazy-module --save
+sudo apt-get install python3.7
 ```
 
-Windows:
-
+Pip 3
 ```sh
-edit autoexec.bat
+sudo apt-get -y install python3-pip
+```
+
+Pygame
+```sh
+sudo pip install pygame
+```
+
+NumPy
+```sh
+sudo pip install numpy
+```
+
+#### Windows:
+
+Python 3.7
+```sh
+https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe
+```
+
+Pip 3 (Já instalado)
+
+Pygame
+```sh
+pip install pygame
+```
+
+NumPy
+```sh
+pip install numpy
 ```
 
 ## Exemplo de uso
 
-Alguns exemplos interessantes e úteis sobre como seu projeto pode ser utilizado. Adicione blocos de códigos e, se necessário, screenshots.
+Para executar, basta acessar a pasta _Scripts_ e executar o arquivo _Game.py_. Ou por linha de código:
 
-_Para mais exemplos, consulte a [Wiki][wiki]._ 
-
-## Configuração para Desenvolvimento
-
-Descreva como instalar todas as dependências para desenvolvimento e como rodar um test-suite automatizado de algum tipo. Se necessário, faça isso para múltiplas plataformas.
-
+#### OS X & Linux:
 ```sh
-make install
-npm test
+python3 Game.py
 ```
 
-## Histórico de lançamentos
-
-* 0.2.1
-    * MUDANÇA: Atualização de docs (código do módulo permanece inalterado)
-* 0.2.0
-    * MUDANÇA: Remove `setDefaultXYZ()`
-    * ADD: Adiciona `init()`
-* 0.1.1
-    * CONSERTADO: Crash quando chama `baz()` (Obrigado @NomeDoContribuidorGeneroso!)
-* 0.1.0
-    * O primeiro lançamento adequado
-    * MUDANÇA: Renomeia `foo()` para `bar()`
-* 0.0.1
-    * Trabalho em andamento
+#### Windows:
+```sh
+python Game.py
+```
 
 ## Meta
 
-Seu Nome – [@SeuNome](https://twitter.com/...) – SeuEmail@exemplo.com
+Gustavo de Almeida Duarte – [@gustavodealmeida](https://github.com/gustavodealmeida/) – gduarte@alunos.utfpr.edu.br
 
-Distribuído sob a licença XYZ. Veja `LICENSE` para mais informações.
+Lucas do Prado Pinto – [@pradoplucas](https://github.com/pradoplucas/) – lucaspinto@alunos.utfpr.edu.br
 
-[https://github.com/yourname/github-link](https://github.com/othonalberto/)
+Thiago Pereira Correa – [@ThiagoPokst](https://github.com/ThiagoPokst/) – thiagocorrea@alunos.utfpr.edu.br 
 
 ## Contributing
 
-1. Faça o _fork_ do projeto (<https://github.com/yourname/yourproject/fork>)
+1. Faça o _fork_ do projeto (<https://github.com/pradoplucas/projectIA>)
 2. Crie uma _branch_ para sua modificação (`git checkout -b feature/fooBar`)
 3. Faça o _commit_ (`git commit -am 'Add some fooBar'`)
 4. _Push_ (`git push origin feature/fooBar`)
 5. Crie um novo _Pull Request_
-
-[npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square
-[npm-url]: https://npmjs.org/package/datadog-metrics
-[npm-downloads]: https://img.shields.io/npm/dm/datadog-metrics.svg?style=flat-square
-[travis-image]: https://img.shields.io/travis/dbader/node-datadog-metrics/master.svg?style=flat-square
-[travis-url]: https://travis-ci.org/dbader/node-datadog-metrics
-[wiki]: https://github.com/seunome/seuprojeto/wiki
