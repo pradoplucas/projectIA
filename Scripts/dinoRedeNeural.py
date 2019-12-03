@@ -155,3 +155,8 @@ def mutacaoMatriz(tipo_mutacao, valor):
         somador = np.random.randint(0,100)
         valor += somador
     return valor
+
+# Dados de tempo em Epoca para atingir cada potuação
+def writeTimeEpoca(text):
+    with open('Dados_Tempo_Epocas.txt', 'a') as file:
+        file.write(text + '\n\n')

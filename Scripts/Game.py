@@ -1,6 +1,7 @@
 import pygame
 import random
 import numpy as np
+import time
 import dinoClasse as dn
 import dinoRedeNeural as rn
 import dinoAlgGenetico as ag
@@ -10,10 +11,20 @@ import dinoAlgGenetico as ag
 # 5 camadas de entrada, 5 camadas ocultas e 1 saída
 dino = []
 entradas = np.zeros(5)
-entradasCerebro = np.zeros(5)
+entradasAntesAcao = np.zeros(5) 
 stringGeracaoEpoca = ''
-
 isGenetic = False
+
+# Auxiliar para saber se foi a primeira vez da pontuação atingida
+#   0 - Não foi atingido 100 ainda
+#   1 - Já foi atingido 100
+#   2 - Já foi atingido 500
+#   3 - Já foi atingido 1000
+#   4 - Já foi atingido 2000
+contadorScore = 0
+
+# Auxiliar para obter o tempo
+tempoInicio = 0
 
 #Speed
 speed = 1
@@ -182,10 +193,13 @@ fontSmall = pygame.font.Font('freesansbold.ttf', 8)
 ##############################################################
 
 def main():
-    global countFrames, isPlaying
+    global countFrames, isPlaying, tempoInicio
 
     #FPS
     framesPerSecond = pygame.time.Clock()
+
+    # Pegando o tempo de inicio
+    tempoInicio = time.time()
 
     if menu(framesPerSecond):
         print(stringGeracaoEpoca + ' 1')
@@ -369,10 +383,43 @@ def onRestartAll():
     distanceObstacle = 0
 
 def setScore():
-    global countFrames, score, textScore
+    global countFrames, score, textScore, tempoInicio, dino, contadorScore
 
     score = countFrames // 4
     
+    # "Anotar"  tempo e epoca quando pontuação ultrapassada
+    if score >= 100:
+        if contadorScore == 0:
+            contadorScore += 1
+            txtDados = 'Tempo: ' + str(time.time() - tempoInicio)
+            txtDados += '    Epoca: ' + str(ag.NumGeracaoEpoca + 1)
+            txtDados += '\n\n'
+            rn.writeTimeEpoca(txtDados)
+    if score >= 500:
+        if contadorScore == 1:
+            contadorScore += 1
+            txtDados = 'Tempo: ' + str(time.time() - tempoInicio)
+            txtDados += '    Epoca: ' + str(ag.NumGeracaoEpoca + 1)
+            txtDados += '\n\n'
+            rn.writeTimeEpoca(txtDados)
+    if score >= 1000:
+        if contadorScore == 2:
+            contadorScore += 1
+            txtDados = 'Tempo: ' + str(time.time() - tempoInicio)
+            txtDados += '    Epoca: ' + str(ag.NumGeracaoEpoca + 1)
+            txtDados += '\n\n'
+            rn.writeTimeEpoca(txtDados)
+    if score >= 2000:
+        if contadorScore == 3:
+            contadorScore += 1
+            txtDados = 'Tempo: ' + str(time.time() - tempoInicio)
+            txtDados += '    Epoca: ' + str(ag.NumGeracaoEpoca + 1)
+            txtDados += '\n\n'
+            rn.writeTimeEpoca(txtDados)
+    
+
+
+
     #Setando score para cada dino
     for i in range(ag.TamanhoPopulacao):
         if not dino[i].dead:
